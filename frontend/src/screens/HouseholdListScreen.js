@@ -105,10 +105,12 @@ const HouseholdListScreen = () => {
             />
             {searchTerm && (
               <Button 
-                variant="outline-secondary" 
+                variant="outline-secondary"
+                
                 onClick={() => setSearchTerm('')}
               >
                 <i className="fas fa-times"></i>
+                Xóa
               </Button>
             )}
           </InputGroup>

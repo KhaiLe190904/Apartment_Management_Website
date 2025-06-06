@@ -89,7 +89,7 @@ const Header = () => {
                     className="nav-link-custom"
                   >
                     <LinkContainer to="/payments">
-                      <NavDropdown.Item>Danh sách thanh toán</NavDropdown.Item>
+                      <NavDropdown.Item >Danh sách thanh toán</NavDropdown.Item>
                     </LinkContainer>
                     <LinkContainer to="/payments/create">
                       <NavDropdown.Item>Tạo thanh toán mới</NavDropdown.Item>
