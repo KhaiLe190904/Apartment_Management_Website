@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext, useCallback } from 'react';
-import { Form, Button, Row, Col } from 'react-bootstrap';
+import { Form, Button, Row, Col, Card } from 'react-bootstrap';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import Message from '../components/Message';
 import Loader from '../components/Loader';
@@ -233,167 +233,160 @@ const PaymentCreateScreen = () => {
         <i className="fas fa-arrow-left"></i> Quay lại Thanh Toán
       </Link>
       
-      <FormContainer>
-        <h1>Tạo Thanh Toán Mới</h1>
-        
-        {error && <Message variant='danger'>{error}</Message>}
-        {success && <Message variant='success'>Thanh toán đã được tạo thành công</Message>}
-        {loading && <Loader />}
-        
-        <Form onSubmit={submitHandler}>
-          <Form.Group controlId='household' className='mb-3'>
-            <Form.Label>Hộ Gia Đình</Form.Label>
-            <Form.Select
-              value={householdId}
-              onChange={(e) => setHouseholdId(e.target.value)}
-              isInvalid={!!validationErrors.householdId}
-              required
-            >
-              <option value="">Chọn Hộ Gia Đình</option>
-              {households.map((household) => (
-                <option key={household._id} value={household._id}>
-                  {household.apartmentNumber}
-                </option>
-              ))}
-            </Form.Select>
-            <Form.Control.Feedback type='invalid'>
-              {validationErrors.householdId}
-            </Form.Control.Feedback>
-          </Form.Group>
-          
-          <Form.Group controlId='fee' className='mb-3'>
-            <Form.Label>Loại Phí</Form.Label>
-            <Form.Select
-              value={feeId}
-              onChange={(e) => setFeeId(e.target.value)}
-              isInvalid={!!validationErrors.feeId}
-              required
-            >
-              <option value="">Chọn Loại Phí</option>
-              {fees.map((fee) => (
-                <option key={fee._id} value={fee._id}>
-                  {fee.name} ({fee.amount.toLocaleString()} VND)
-                </option>
-              ))}
-            </Form.Select>
-            <Form.Control.Feedback type='invalid'>
-              {validationErrors.feeId}
-            </Form.Control.Feedback>
-          </Form.Group>
-          
-          <Form.Group controlId='amount' className='mb-3'>
-            <Form.Label>Số Tiền</Form.Label>
-            <Form.Control
-              type='number'
-              placeholder='Nhập số tiền'
-              value={amount}
-              onChange={(e) => setAmount(e.target.value)}
-              isInvalid={!!validationErrors.amount}
-              required
-              min="0"
-              step="0.01"
-            />
-            <Form.Control.Feedback type='invalid'>
-              {validationErrors.amount}
-            </Form.Control.Feedback>
-          </Form.Group>
-          
-          <Form.Group controlId='paymentDate' className='mb-3'>
-            <Form.Label>Ngày Thanh Toán</Form.Label>
-            <Form.Control
-              type='date'
-              value={paymentDate}
-              onChange={(e) => setPaymentDate(e.target.value)}
-              isInvalid={!!validationErrors.paymentDate}
-              required
-            />
-            <Form.Control.Feedback type='invalid'>
-              {validationErrors.paymentDate}
-            </Form.Control.Feedback>
-          </Form.Group>
-          
-          <Form.Group controlId='period' className='mb-3'>
-            <Form.Label>{isDebtPayment ? 'Kỳ Thanh Toán (Nợ)' : 'Kỳ Thanh Toán'}</Form.Label>
-            <Form.Control
-              type='month'
-              value={period.substring(0, 7)}
-              onChange={(e) => setPeriod(e.target.value)}
-              isInvalid={!!validationErrors.period}
-              required
-            />
-            <Form.Text className="text-muted">
-              {isDebtPayment ? 'Chọn tháng cần thanh toán nợ' : 'Chọn tháng áp dụng khoản thanh toán này'}
-            </Form.Text>
-            <Form.Control.Feedback type='invalid'>
-              {validationErrors.period}
-            </Form.Control.Feedback>
-          </Form.Group>
-          
-          <Row>
-            <Col md={6}>
-              <Form.Group controlId='payerName' className='mb-3'>
-                <Form.Label>Tên Người Thanh Toán</Form.Label>
-                <Form.Control
-                  type='text'
-                  placeholder='Nhập tên người thanh toán'
-                  value={payerName}
-                  onChange={(e) => setPayerName(e.target.value)}
-                />
-              </Form.Group>
-            </Col>
-            
-            <Col md={6}>
-              <Form.Group controlId='payerPhone' className='mb-3'>
-                <Form.Label>Số Điện Thoại</Form.Label>
-                <Form.Control
-                  type='text'
-                  placeholder='Nhập số điện thoại'
-                  value={payerPhone}
-                  onChange={(e) => setPayerPhone(e.target.value)}
-                />
-              </Form.Group>
-            </Col>
-          </Row>
-          
-          <Form.Group controlId='payerId' className='mb-3'>
-            <Form.Label>CMND/CCCD</Form.Label>
-            <Form.Control
-              type='text'
-              placeholder='Nhập CMND/CCCD'
-              value={payerId}
-              onChange={(e) => setPayerId(e.target.value)}
-            />
-          </Form.Group>
-          
-          <Form.Group controlId='receiptNumber' className='mb-3'>
-            <Form.Label>Mã Biên Lai</Form.Label>
-            <Form.Control
-              type='text'
-              placeholder='Nhập mã biên lai'
-              value={receiptNumber}
-              onChange={(e) => setReceiptNumber(e.target.value)}
-            />
-            <Form.Text className="text-muted">
-              Tự động tạo, nhưng có thể thay đổi
-            </Form.Text>
-          </Form.Group>
-          
-          <Form.Group controlId='note' className='mb-3'>
-            <Form.Label>Ghi Chú</Form.Label>
-            <Form.Control
-              as='textarea'
-              rows={3}
-              placeholder='Nhập ghi chú (không bắt buộc)'
-              value={note}
-              onChange={(e) => setNote(e.target.value)}
-            />
-          </Form.Group>
-          
-          <Button type='submit' variant='primary' className='mt-3'>
-            Tạo Thanh Toán
-          </Button>
-        </Form>
-      </FormContainer>
+      <Card className="shadow-lg border-success mb-4">
+        <Card.Header className="bg-success text-white d-flex align-items-center">
+          <i className="fas fa-money-check-alt fa-lg me-2"></i>
+          <h1 className="mb-0" style={{ fontSize: '1.5rem' }}>Tạo Thanh Toán Mới</h1>
+        </Card.Header>
+        <Card.Body>
+          {error && <Message variant='danger'>{error}</Message>}
+          {success && <Message variant='success'>Thanh toán đã được tạo thành công</Message>}
+          {loading && <Loader />}
+          <Form onSubmit={submitHandler} className="p-2">
+            <Form.Group controlId='household' className='mb-3'>
+              <Form.Label><i className="fas fa-home me-1 text-primary"></i> Hộ Gia Đình</Form.Label>
+              <Form.Select
+                value={householdId}
+                onChange={(e) => setHouseholdId(e.target.value)}
+                isInvalid={!!validationErrors.householdId}
+                required
+              >
+                <option value="">Chọn Hộ Gia Đình</option>
+                {households.map((household) => (
+                  <option key={household._id} value={household._id}>
+                    {household.apartmentNumber}
+                  </option>
+                ))}
+              </Form.Select>
+              <Form.Control.Feedback type='invalid'>
+                {validationErrors.householdId}
+              </Form.Control.Feedback>
+            </Form.Group>
+            <Form.Group controlId='fee' className='mb-3'>
+              <Form.Label><i className="fas fa-coins me-1 text-warning"></i> Loại Phí</Form.Label>
+              <Form.Select
+                value={feeId}
+                onChange={(e) => setFeeId(e.target.value)}
+                isInvalid={!!validationErrors.feeId}
+                required
+              >
+                <option value="">Chọn Loại Phí</option>
+                {fees.map((fee) => (
+                  <option key={fee._id} value={fee._id}>
+                    {fee.name} ({fee.amount.toLocaleString()} VND)
+                  </option>
+                ))}
+              </Form.Select>
+              <Form.Control.Feedback type='invalid'>
+                {validationErrors.feeId}
+              </Form.Control.Feedback>
+            </Form.Group>
+            <Form.Group controlId='amount' className='mb-3'>
+              <Form.Label><i className="fas fa-money-bill-wave me-1 text-success"></i> Số Tiền</Form.Label>
+              <Form.Control
+                type='number'
+                placeholder='Nhập số tiền thanh toán...'
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+                isInvalid={!!validationErrors.amount}
+                required
+                min="0"
+                step="0.01"
+              />
+              <Form.Control.Feedback type='invalid'>
+                {validationErrors.amount}
+              </Form.Control.Feedback>
+            </Form.Group>
+            <Form.Group controlId='paymentDate' className='mb-3'>
+              <Form.Label><i className="fas fa-calendar-day me-1 text-info"></i> Ngày Thanh Toán</Form.Label>
+              <Form.Control
+                type='date'
+                value={paymentDate}
+                onChange={(e) => setPaymentDate(e.target.value)}
+                isInvalid={!!validationErrors.paymentDate}
+                required
+              />
+              <Form.Control.Feedback type='invalid'>
+                {validationErrors.paymentDate}
+              </Form.Control.Feedback>
+            </Form.Group>
+            <Form.Group controlId='period' className='mb-3'>
+              <Form.Label><i className="fas fa-calendar-alt me-1 text-secondary"></i> {isDebtPayment ? 'Kỳ Thanh Toán (Nợ)' : 'Kỳ Thanh Toán'}</Form.Label>
+              <Form.Control
+                type='month'
+                value={period.substring(0, 7)}
+                onChange={(e) => setPeriod(e.target.value)}
+                isInvalid={!!validationErrors.period}
+                required
+              />
+              <Form.Text className="text-muted">
+                {isDebtPayment ? 'Chọn tháng cần thanh toán nợ' : 'Chọn tháng áp dụng khoản thanh toán này'}
+              </Form.Text>
+              <Form.Control.Feedback type='invalid'>
+                {validationErrors.period}
+              </Form.Control.Feedback>
+            </Form.Group>
+            <Row>
+              <Col md={6}>
+                <Form.Group controlId='payerName' className='mb-3'>
+                  <Form.Label><i className="fas fa-user me-1 text-primary"></i> Tên Người Thanh Toán</Form.Label>
+                  <Form.Control
+                    type='text'
+                    placeholder='Nhập tên người thanh toán...'
+                    value={payerName}
+                    onChange={(e) => setPayerName(e.target.value)}
+                  />
+                </Form.Group>
+              </Col>
+              <Col md={6}>
+                <Form.Group controlId='payerPhone' className='mb-3'>
+                  <Form.Label><i className="fas fa-phone me-1 text-success"></i> Số Điện Thoại</Form.Label>
+                  <Form.Control
+                    type='text'
+                    placeholder='Nhập số điện thoại...'
+                    value={payerPhone}
+                    onChange={(e) => setPayerPhone(e.target.value)}
+                  />
+                </Form.Group>
+              </Col>
+            </Row>
+            <Form.Group controlId='payerId' className='mb-3'>
+              <Form.Label><i className="fas fa-id-card me-1 text-info"></i> CMND/CCCD</Form.Label>
+              <Form.Control
+                type='text'
+                placeholder='Nhập CMND/CCCD...'
+                value={payerId}
+                onChange={(e) => setPayerId(e.target.value)}
+              />
+            </Form.Group>
+            <Form.Group controlId='receiptNumber' className='mb-3'>
+              <Form.Label><i className="fas fa-receipt me-1 text-warning"></i> Mã Biên Lai</Form.Label>
+              <Form.Control
+                type='text'
+                placeholder='Nhập mã biên lai hoặc để tự động...'
+                value={receiptNumber}
+                onChange={(e) => setReceiptNumber(e.target.value)}
+              />
+              <Form.Text className="text-muted">
+                Tự động tạo, nhưng có thể thay đổi
+              </Form.Text>
+            </Form.Group>
+            <Form.Group controlId='note' className='mb-3'>
+              <Form.Label><i className="fas fa-sticky-note me-1 text-secondary"></i> Ghi Chú</Form.Label>
+              <Form.Control
+                as='textarea'
+                rows={3}
+                placeholder='Thêm ghi chú cho thanh toán (không bắt buộc)'
+                value={note}
+                onChange={(e) => setNote(e.target.value)}
+              />
+            </Form.Group>
+            <Button type='submit' variant='success' className='mt-3 w-100 shadow-sm' size="lg">
+              <i className="fas fa-plus-circle me-2"></i> Tạo Thanh Toán
+            </Button>
+          </Form>
+        </Card.Body>
+      </Card>
     </>
   );
 };

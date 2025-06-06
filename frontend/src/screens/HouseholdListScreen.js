@@ -1,17 +1,20 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { Table, Button, Row, Col, Form, InputGroup } from 'react-bootstrap';
+import { Table, Button, Row, Col, Form, InputGroup, Card } from 'react-bootstrap';
 import { LinkContainer } from 'react-router-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import Message from '../components/Message';
 import Loader from '../components/Loader';
 import AuthContext from '../context/AuthContext';
 import axios from 'axios';
+import ConfirmDeleteModal from '../components/ConfirmDeleteModal';
 
 const HouseholdListScreen = () => {
   const [households, setHouseholds] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [deleteId, setDeleteId] = useState(null);
   
   const navigate = useNavigate();
   const { userInfo } = useContext(AuthContext);
@@ -45,28 +48,31 @@ const HouseholdListScreen = () => {
   };
   
   const deleteHandler = async (id) => {
-    if (window.confirm('Bạn có chắc chắn muốn xóa hộ gia đình này không?')) {
-      try {
-        setLoading(true);
-        
-        const config = {
-          headers: {
-            Authorization: `Bearer ${userInfo.token}`,
-          },
-        };
-        
-        await axios.delete(`/api/households/${id}`, config);
-        
-        fetchHouseholds();
-      } catch (error) {
-        setError(
-          error.response && error.response.data.message
-            ? error.response.data.message
-            : 'Không thể xóa hộ gia đình'
-        );
-        setLoading(false);
-      }
+    setDeleteId(id);
+    setShowConfirm(true);
+  };
+  
+  const handleConfirmDelete = async () => {
+    setShowConfirm(false);
+    if (!deleteId) return;
+    try {
+      setLoading(true);
+      const config = {
+        headers: {
+          Authorization: `Bearer ${userInfo.token}`,
+        },
+      };
+      await axios.delete(`/api/households/${deleteId}`, config);
+      fetchHouseholds();
+    } catch (error) {
+      setError(
+        error.response && error.response.data.message
+          ? error.response.data.message
+          : 'Không thể xóa hộ gia đình'
+      );
+      setLoading(false);
     }
+    setDeleteId(null);
   };
   
   const filteredHouseholds = households.filter(
@@ -114,64 +120,93 @@ const HouseholdListScreen = () => {
       ) : error ? (
         <Message variant="danger">{error}</Message>
       ) : (
-        <>
-          <Table striped bordered hover responsive className="table-sm">
-            <thead>
-              <tr>
-                <th>Căn Hộ</th>
-                <th>Địa Chỉ</th>
-                <th>Chủ Hộ</th>
-                <th>Trạng Thái</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredHouseholds.map((household) => (
-                <tr key={household._id}>
-                  <td>{household.apartmentNumber}</td>
-                  <td>{household.address}</td>
-                  <td>
-                    {household.householdHead
-                      ? household.householdHead.fullName
-                      : 'Chưa Gán'}
-                  </td>
-                  <td>
-                    {household.active ? (
-                      <span className="text-success">Hoạt Động</span>
-                    ) : (
-                      <span className="text-danger">Không Hoạt Động</span>
-                    )}
-                  </td>
-                  <td>
-                    <LinkContainer to={`/households/${household._id}`}>
-                      <Button variant="light" className="btn-sm mx-1">
-                        <i className="fas fa-eye"></i>
-                      </Button>
-                    </LinkContainer>
-                    <LinkContainer to={`/households/${household._id}/edit`}>
-                      <Button variant="light" className="btn-sm mx-1">
-                        <i className="fas fa-edit"></i>
-                      </Button>
-                    </LinkContainer>
-                    {userInfo.role === 'admin' && (
-                      <Button
-                        variant="danger"
-                        className="btn-sm mx-1"
-                        onClick={() => deleteHandler(household._id)}
-                      >
-                        <i className="fas fa-trash"></i>
-                      </Button>
-                    )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </Table>
-          {filteredHouseholds.length === 0 && (
-            <Message>Không tìm thấy hộ gia đình nào</Message>
-          )}
-        </>
+        <Card className="shadow-lg border-0 rounded-4">
+          <Card.Header className="bg-white border-0 rounded-top-4 pb-2 d-flex align-items-center justify-content-between">
+            <span className="fw-bold fs-5 text-primary"><i className="bi bi-building me-2"></i>Danh sách hộ gia đình</span>
+            <span className="text-muted small">Tổng: {filteredHouseholds.length}</span>
+          </Card.Header>
+          <Card.Body className="p-0">
+            <div className="table-responsive">
+              <table className="table table-hover align-middle mb-0 household-table">
+                <thead className="table-light">
+                  <tr>
+                    <th className="fw-bold text-center">Căn Hộ</th>
+                    <th className="fw-bold">Địa Chỉ</th>
+                    <th className="fw-bold">Chủ Hộ</th>
+                    <th className="fw-bold text-center">Trạng Thái</th>
+                    <th className="fw-bold text-center">Thao Tác</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredHouseholds.map((household) => (
+                    <tr key={household._id} className="table-row-hover">
+                      <td className="text-center align-middle">
+                        <span className="badge bg-primary bg-opacity-10 text-primary px-3 py-2 fs-6 rounded-pill">
+                          <i className="bi bi-house-door me-2"></i>{household.apartmentNumber}
+                        </span>
+                      </td>
+                      <td className="align-middle">{household.address}</td>
+                      <td className="align-middle">
+                        {household.householdHead
+                          ? <span className="fw-semibold text-dark"><i className="bi bi-person-circle me-1"></i>{household.householdHead.fullName}</span>
+                          : <span className="text-muted fst-italic">Chưa Gán</span>}
+                      </td>
+                      <td className="text-center align-middle">
+                        {household.active ? (
+                          <span className="badge bg-success bg-opacity-10 text-success px-3 py-2 rounded-pill">
+                            <i className="bi bi-check-circle me-1"></i>Hoạt Động
+                          </span>
+                        ) : (
+                          <span className="badge bg-danger bg-opacity-10 text-danger px-3 py-2 rounded-pill">
+                            <i className="bi bi-x-circle me-1"></i>Không Hoạt Động
+                          </span>
+                        )}
+                      </td>
+                      <td className="text-center align-middle">
+                        <div className="d-flex justify-content-center gap-1">
+                          <LinkContainer to={`/households/${household._id}`}>
+                            <Button variant="light" className="btn-circle mx-1" title="Xem chi tiết">
+                              Xem
+                            </Button>
+                          </LinkContainer>
+                          <LinkContainer to={`/households/${household._id}/edit`}>
+                            <Button variant="light" className="btn-circle mx-1" title="Chỉnh sửa">
+                              Chỉnh sửa
+                            </Button>
+                          </LinkContainer>
+                          {userInfo.role === 'admin' && (
+                            <Button
+                              variant="danger"
+                              className="btn-circle mx-1"
+                              onClick={() => deleteHandler(household._id)}
+                              title="Xóa"
+                            >
+                              Xóa
+                            </Button>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            {filteredHouseholds.length === 0 && (
+              <Message>Không tìm thấy hộ gia đình nào</Message>
+            )}
+          </Card.Body>
+        </Card>
       )}
+      <ConfirmDeleteModal
+        show={showConfirm}
+        onHide={() => setShowConfirm(false)}
+        onConfirm={handleConfirmDelete}
+        title="Xác nhận xóa hộ gia đình"
+        message="Bạn có chắc chắn muốn xóa hộ gia đình này? Hành động này không thể hoàn tác."
+        confirmText="Xóa"
+        cancelText="Hủy"
+        loading={loading}
+      />
     </>
   );
 };

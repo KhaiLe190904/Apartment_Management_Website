@@ -17,7 +17,7 @@ import {
   Tooltip,
   Legend,
 } from 'chart.js';
-import { Pie, Bar, Line } from 'react-chartjs-2';
+import { Pie, Bar, Line, Doughnut } from 'react-chartjs-2';
 
 // Register Chart.js components
 ChartJS.register(
@@ -58,13 +58,11 @@ const DashboardScreen = () => {
         if (!userInfo) {
           return;
         }
-        
         const config = {
           headers: {
             Authorization: `Bearer ${userInfo.token}`,
           },
         };
-        
         const { data } = await axios.get('/api/statistics/dashboard', config);
         setStats(data);
         setLoading(false);
@@ -73,7 +71,6 @@ const DashboardScreen = () => {
         setLoading(false);
       }
     };
-    
     fetchDashboardData();
   }, [userInfo]);
   
@@ -294,9 +291,38 @@ const DashboardScreen = () => {
     }
   };
   
+  // Area chart (Line với fill)
+  const areaChartOptions = {
+    ...lineChartOptions,
+    elements: { line: { fill: true } },
+    plugins: {
+      ...lineChartOptions.plugins,
+      title: { ...lineChartOptions.plugins.title, text: 'Biểu đồ Doanh Thu (Area)' }
+    }
+  };
+  const areaChartData = {
+    ...monthlyTrend,
+    datasets: monthlyTrend.datasets.map(ds => ({ ...ds, fill: true, backgroundColor: 'rgba(0,204,255,0.15)' }))
+  };
+  // Bar ngang cho thống kê số lượng
+  const horizontalBarOptions = {
+    ...barChartOptions,
+    indexAxis: 'y',
+    plugins: {
+      ...barChartOptions.plugins,
+      title: { ...barChartOptions.plugins.title, text: 'Thống Kê Số Lượng (Bar Ngang)' }
+    }
+  };
+  
   return (
-    <>
-      <h1 className="mb-4">Bảng Điều Khiển Quản Lý</h1>
+    <div className="dashboard-bg py-4 px-2 px-md-4">
+      <div className="d-flex align-items-center gap-3 mb-4 flex-wrap">
+        <i className="bi bi-speedometer2 text-primary" style={{ fontSize: 36 }}></i>
+        <h1 className="mb-0 fw-bold" style={{ letterSpacing: 1 }}>Bảng Điều Khiển Quản Lý</h1>
+        <div className="ms-auto fw-semibold text-secondary" style={{ minWidth: 120, fontSize: 18 }}>
+          {stats.financials.displayMonthName || (new Date().toLocaleDateString('vi-VN', { month: '2-digit', year: 'numeric' }))}
+        </div>
+      </div>
       
       {error && <Message variant="danger">{error}</Message>}
       
@@ -304,175 +330,103 @@ const DashboardScreen = () => {
         <Loader />
       ) : (
         <>
-          <Row>
-            <Col md={3}>
-              <Card className="mb-4 bg-primary text-white shadow">
-                <Card.Body>
-                  <div className="d-flex justify-content-between align-items-center">
-                    <div>
-                      <Card.Title as="h5">Hộ Gia Đình</Card.Title>
-                      <Card.Text as="h2">{stats.counts.households}</Card.Text>
-                    </div>
-                    <i className="fas fa-home fa-2x"></i>
-                  </div>
-                  <Link to="/households" className="text-white">
-                    <small>Xem Chi Tiết &rarr;</small>
-                  </Link>
-                </Card.Body>
-              </Card>
-            </Col>
-            
-            <Col md={3}>
-              <Card className="mb-4 bg-success text-white shadow">
-                <Card.Body>
-                  <div className="d-flex justify-content-between align-items-center">
-                    <div>
-                      <Card.Title as="h5">Cư Dân</Card.Title>
-                      <Card.Text as="h2">{stats.counts.residents}</Card.Text>
-                    </div>
-                    <i className="fas fa-users fa-2x"></i>
-                  </div>
-                  <Link to="/residents" className="text-white">
-                    <small>Xem Chi Tiết &rarr;</small>
-                  </Link>
-                </Card.Body>
-              </Card>
-            </Col>
-            
-            <Col md={3}>
-              <Card className="mb-4 bg-warning text-white shadow">
-                <Card.Body>
-                  <div className="d-flex justify-content-between align-items-center">
-                    <div>
-                      <Card.Title as="h5">Loại Phí</Card.Title>
-                      <Card.Text as="h2">{stats.counts.fees}</Card.Text>
-                    </div>
-                    <i className="fas fa-file-invoice-dollar fa-2x"></i>
-                  </div>
-                  <Link to="/fees" className="text-white">
-                    <small>Xem Chi Tiết &rarr;</small>
-                  </Link>
-                </Card.Body>
-              </Card>
-            </Col>
-            
-            <Col md={3}>
-              <Card className="mb-4 bg-info text-white shadow">
-                <Card.Body>
-                  <div className="d-flex justify-content-between align-items-center">
-                    <div>
-                      <Card.Title as="h5">Doanh Thu</Card.Title>
-                      <Card.Text as="h2">{stats.financials.monthlyRevenue.toLocaleString()}</Card.Text>
-                    </div>
-                    <i className="fas fa-dollar-sign fa-2x"></i>
-                  </div>
-                  <div className="d-flex justify-content-between align-items-center">
-                    <small className="text-light">
-                      {stats.financials.displayMonthName || "Tháng hiện tại"}
-                    </small>
-                    <Link to="/payments" className="text-white">
-                      <small>Xem Chi Tiết &rarr;</small>
-                    </Link>
-                  </div>
-                </Card.Body>
-              </Card>
-            </Col>
-          </Row>
-          
-          <Row className="mb-4">
-            <Col md={6}>
-              <Card className="shadow h-100">
-                <Card.Header className="bg-white">
-                  <h5 className="mb-0">Tỷ Lệ Doanh Thu</h5>
-                  <small className="text-muted">{stats.financials.displayMonthName || "Tháng hiện tại"} theo loại phí</small>
-                </Card.Header>
-                <Card.Body>
-                  {Object.keys(stats.financials.revenueByType).length === 0 ? (
-                    <p className="text-center">Không có dữ liệu doanh thu tháng này</p>
-                  ) : (
-                    <div style={{ height: '300px' }}>
-                      <Pie data={revenueByTypeData} options={pieChartOptions} />
-                    </div>
-                  )}
-                </Card.Body>
-              </Card>
-            </Col>
-            
-            <Col md={6}>
-              <Card className="shadow h-100">
-                <Card.Header className="bg-white">
-                  <h5 className="mb-0">Thống Kê Số Lượng</h5>
-                  <small className="text-muted">Số lượng hộ gia đình và cư dân</small>
-                </Card.Header>
-                <Card.Body>
-                  <div style={{ height: '300px' }}>
-                    <Bar data={countsComparisonData} options={barChartOptions} />
-                  </div>
-                </Card.Body>
-              </Card>
-            </Col>
-          </Row>
-          
-          <Row className="mb-4">
-            <Col md={12}>
-              <Card className="shadow">
-                <Card.Header className="bg-white">
-                  <h5 className="mb-0">Biểu Đồ Doanh Thu</h5>
-                  <small className="text-muted">6 tháng gần nhất</small>
-                </Card.Header>
-                <Card.Body>
-                  <div style={{ height: '300px' }}>
-                    <Line data={monthlyTrend} options={lineChartOptions} />
-                  </div>
-                </Card.Body>
-              </Card>
-            </Col>
-          </Row>
-          
-          <Row>
-            <Col md={12}>
-              <Card className="mb-4 shadow">
-                <Card.Header className="bg-white">
-                  <h5 className="mb-0">Phí Đã Thanh Toán Gần Đây</h5>
-                </Card.Header>
-                <Card.Body>
-                  {stats.recentPayments.length === 0 ? (
-                    <p className="text-center">Không tìm thấy thanh toán gần đây</p>
-                  ) : (
-                    <div className="table-responsive">
-                      <table className="table table-hover">
-                        <thead>
-                          <tr>
-                            <th>Hộ Gia Đình</th>
-                            <th>Phí</th>
-                            <th>Số Tiền</th>
-                            <th>Ngày</th>
+          {/* Card thống kê: Row/Col, tối giản, màu trắng/xám nhạt */}
+          <div className="row g-3 mb-4 justify-content-center">
+            <div className="col-6 col-md-3">
+              <div className="bg-white border rounded-4 shadow-sm p-3 text-center">
+                <div className="text-secondary small mb-1">HỘ GIA ĐÌNH</div>
+                <div className="fw-bold fs-3 text-primary mb-1">{stats.counts.households}</div>
+                <Link to="/households" className="small text-decoration-none">Xem chi tiết</Link>
+              </div>
+            </div>
+            <div className="col-6 col-md-3">
+              <div className="bg-white border rounded-4 shadow-sm p-3 text-center">
+                <div className="text-secondary small mb-1">CƯ DÂN</div>
+                <div className="fw-bold fs-3 text-success mb-1">{stats.counts.residents}</div>
+                <Link to="/residents" className="small text-decoration-none">Xem chi tiết</Link>
+              </div>
+            </div>
+            <div className="col-6 col-md-3">
+              <div className="bg-white border rounded-4 shadow-sm p-3 text-center">
+                <div className="text-secondary small mb-1">LOẠI PHÍ</div>
+                <div className="fw-bold fs-3 text-warning mb-1">{stats.counts.fees}</div>
+                <Link to="/fees" className="small text-decoration-none">Xem chi tiết</Link>
+              </div>
+            </div>
+            <div className="col-6 col-md-3">
+              <div className="bg-white border rounded-4 shadow-sm p-3 text-center">
+                <div className="text-secondary small mb-1">DOANH THU</div>
+                <div className="fw-bold fs-3 text-info mb-1">{stats.financials.monthlyRevenue.toLocaleString()}</div>
+                <Link to="/payments" className="small text-decoration-none">Xem chi tiết</Link>
+              </div>
+            </div>
+          </div>
+          {/* Grid biểu đồ: 2 hàng, mỗi hàng 2 biểu đồ, card trắng, bo góc lớn, shadow nhẹ */}
+          <div className="row g-3 mb-4">
+            <div className="col-12 col-md-6">
+              <div className="bg-white border rounded-4 shadow-sm p-3 h-100">
+                <div className="fw-bold mb-2" style={{ fontSize: 16 }}>Tỷ Lệ Doanh Thu (Doughnut)</div>
+                <div style={{ height: 240 }}>
+                  <Doughnut data={revenueByTypeData} options={pieChartOptions} />
+                </div>
+              </div>
+            </div>
+            <div className="col-12 col-md-6">
+              <div className="bg-white border rounded-4 shadow-sm p-3 h-100">
+                <div className="fw-bold mb-2" style={{ fontSize: 16 }}>Thống Kê Số Lượng (Bar Ngang)</div>
+                <div style={{ height: 240 }}>
+                  <Bar data={countsComparisonData} options={horizontalBarOptions} />
+                </div>
+              </div>
+            </div>
+          </div>
+          <div className="row g-3 mb-4">
+            <div className="col-12 col-md-6">
+              <div className="bg-white border rounded-4 shadow-sm p-3 h-100">
+                <div className="fw-bold mb-2" style={{ fontSize: 16 }}>Biểu Đồ Doanh Thu (Area)</div>
+                <div style={{ height: 240 }}>
+                  <Line data={areaChartData} options={areaChartOptions} />
+                </div>
+              </div>
+            </div>
+            <div className="col-12 col-md-6">
+              <div className="bg-white border rounded-4 shadow-sm p-3 h-100">
+                <div className="fw-bold mb-2" style={{ fontSize: 16 }}>Phí Đã Thanh Toán Gần Đây</div>
+                {stats.recentPayments.length === 0 ? (
+                  <p className="text-center">Không tìm thấy thanh toán gần đây</p>
+                ) : (
+                  <div className="table-responsive">
+                    <table className="table table-hover align-middle table-borderless dashboard-table">
+                      <thead className="table-light">
+                        <tr>
+                          <th className="fw-bold">Hộ Gia Đình</th>
+                          <th className="fw-bold">Phí</th>
+                          <th className="fw-bold">Số Tiền</th>
+                          <th className="fw-bold">Ngày</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {stats.recentPayments.map((payment) => (
+                          <tr key={payment._id} className="table-row-hover">
+                            <td className="text-primary fw-semibold">
+                              <i className="bi bi-house-door me-2"></i>
+                              {payment.household?.apartmentNumber || 'N/A'}
+                            </td>
+                            <td className="fw-semibold">{payment.fee?.name || 'N/A'}</td>
+                            <td className="text-success fw-bold">{payment.amount.toLocaleString()} VND</td>
+                            <td className="text-muted">{new Date(payment.paymentDate).toLocaleDateString('vi-VN')}</td>
                           </tr>
-                        </thead>
-                        <tbody>
-                          {stats.recentPayments.map((payment) => (
-                            <tr key={payment._id}>
-                              <td>
-                                {payment.household?.apartmentNumber || 'N/A'}
-                              </td>
-                              <td>{payment.fee?.name || 'N/A'}</td>
-                              <td>{payment.amount.toLocaleString()} VND</td>
-                              <td>
-                                {new Date(payment.paymentDate).toLocaleDateString('vi-VN')}
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  )}
-                </Card.Body>
-              </Card>
-            </Col>
-          </Row>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
         </>
       )}
-    </>
+    </div>
   );
 };
 

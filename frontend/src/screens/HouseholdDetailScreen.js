@@ -91,60 +91,45 @@ const HouseholdDetailScreen = () => {
         <>
           <Row>
             <Col md={5}>
-              <Card className="mb-4">
-                <Card.Header>
-                  <h4>Thông tin Hộ gia đình</h4>
+              <Card className="mb-4 shadow-lg border-info">
+                <Card.Header className="bg-info text-white d-flex align-items-center">
+                  <i className="fas fa-home fa-lg me-2"></i>
+                  <h4 className="mb-0">Thông tin Hộ gia đình</h4>
                 </Card.Header>
                 <Card.Body>
+                  <div className="mb-3 text-center">
+                    <span className="display-5 fw-bold text-info">
+                      <i className="fas fa-door-open me-2"></i>{household.apartmentNumber}
+                    </span>
+                    <div className="mt-2">
+                      <Badge bg={household.active ? 'success' : 'danger'} className="fs-6">
+                        {household.active ? 'Đang hoạt động' : 'Không hoạt động'}
+                      </Badge>
+                    </div>
+                  </div>
                   <ListGroup variant="flush">
                     <ListGroup.Item>
-                      <Row>
-                        <Col md={5}><strong>Căn hộ:</strong></Col>
-                        <Col>{household.apartmentNumber}</Col>
-                      </Row>
+                      <i className="fas fa-map-marker-alt me-2 text-primary"></i>
+                      <strong>Địa chỉ:</strong> {household.address}
                     </ListGroup.Item>
                     <ListGroup.Item>
-                      <Row>
-                        <Col md={5}><strong>Địa chỉ:</strong></Col>
-                        <Col>{household.address}</Col>
-                      </Row>
-                    </ListGroup.Item>
-                    <ListGroup.Item>
-                      <Row>
-                        <Col md={5}><strong>Trạng thái:</strong></Col>
-                        <Col>
-                          {household.active ? (
-                            <span className="text-success">Đang hoạt động</span>
-                          ) : (
-                            <span className="text-danger">Không hoạt động</span>
-                          )}
-                        </Col>
-                      </Row>
-                    </ListGroup.Item>
-                    <ListGroup.Item>
-                      <Row>
-                        <Col md={5}><strong>Ngày tạo:</strong></Col>
-                        <Col>
-                          {new Date(household.creationDate).toLocaleDateString()}
-                        </Col>
-                      </Row>
+                      <i className="fas fa-calendar-plus me-2 text-secondary"></i>
+                      <strong>Ngày tạo:</strong> <span className="text-dark">{new Date(household.creationDate).toLocaleDateString()}</span>
                     </ListGroup.Item>
                     {household.note && (
                       <ListGroup.Item>
-                        <Row>
-                          <Col md={5}><strong>Ghi chú:</strong></Col>
-                          <Col>{household.note}</Col>
-                        </Row>
+                        <i className="fas fa-sticky-note me-2 text-warning"></i>
+                        <strong>Ghi chú:</strong> <span className="fst-italic text-muted">{household.note}</span>
                       </ListGroup.Item>
                     )}
                   </ListGroup>
                 </Card.Body>
                 <Card.Footer>
                   <Row>
-                    <Col>
+                    <Col className="d-flex justify-content-end">
                       <Link
                         to={`/households/${household._id}/edit`}
-                        className="btn btn-primary btn-sm"
+                        className="btn btn-primary btn-sm shadow-sm"
                       >
                         <i className="fas fa-edit"></i> Chỉnh sửa
                       </Link>
@@ -172,45 +157,49 @@ const HouseholdDetailScreen = () => {
                       Không có cư dân trong hộ gia đình này. Hãy thêm cư dân để bắt đầu.
                     </Alert>
                   ) : (
-                    <Table striped hover responsive className="table-sm">
-                      <thead>
-                        <tr>
-                          <th>Họ tên</th>
-                          <th>CCCD/CMND</th>
-                          <th>Giới tính</th>
-                          <th>Trạng thái</th>
-                          <th></th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {residents.map((resident) => (
-                          <tr key={resident._id}>
-                            <td>
-                              {resident._id === household.householdHead?._id && (
-                                <i className="fas fa-user-check text-success me-1" title="Chủ hộ"></i>
-                              )}
-                              {resident.fullName}
-                            </td>
-                            <td>{resident.idCard || 'N/A'}</td>
-                            <td>{resident.gender === 'male' ? 'Nam' : 'Nữ'}</td>
-                            <td>
-                              {resident.active ? (
-                                <span className="text-success">Đang hoạt động</span>
-                              ) : (
-                                <span className="text-danger">Không hoạt động</span>
-                              )}
-                            </td>
-                            <td>
+                    <Row xs={1} md={2} className="g-3">
+                      {residents.map((resident) => (
+                        <Col key={resident._id}>
+                          <Card className="h-100 shadow-sm border-primary">
+                            <Card.Body>
+                              <div className="d-flex align-items-center mb-2">
+                                <div className="me-3">
+                                  <i className={`fas fa-user-circle fa-2x ${resident.active ? 'text-success' : 'text-secondary'}`}></i>
+                                </div>
+                                <div>
+                                  <Card.Title className="mb-0">
+                                    {resident._id === household.householdHead?._id && (
+                                      <i className="fas fa-crown text-warning me-1" title="Chủ hộ"></i>
+                                    )}
+                                    {resident.fullName}
+                                  </Card.Title>
+                                  <Card.Subtitle className="text-muted" style={{fontSize: '0.95em'}}>
+                                    {resident.gender === 'male' ? 'Nam' : 'Nữ'}
+                                  </Card.Subtitle>
+                                </div>
+                              </div>
+                              <div className="mb-2">
+                                <strong>CCCD/CMND:</strong> {resident.idCard || 'N/A'}
+                              </div>
+                              <div className="mb-2">
+                                <strong>Trạng thái:</strong> {resident.active ? (
+                                  <Badge bg="success">Đang hoạt động</Badge>
+                                ) : (
+                                  <Badge bg="danger">Không hoạt động</Badge>
+                                )}
+                              </div>
+                            </Card.Body>
+                            <Card.Footer className="bg-white border-0 d-flex justify-content-end">
                               <Link to={`/residents/${resident._id}`}>
-                                <Button variant="light" className="btn-sm">
-                                  <i className="fas fa-eye"></i>
+                                <Button variant="outline-primary" className="btn-sm">
+                                  <i className="fas fa-eye"></i> Xem
                                 </Button>
                               </Link>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </Table>
+                            </Card.Footer>
+                          </Card>
+                        </Col>
+                      ))}
+                    </Row>
                   )}
                 </Card.Body>
               </Card>
@@ -232,31 +221,31 @@ const HouseholdDetailScreen = () => {
                       Không có khoản phí nào được áp dụng cho hộ gia đình này.
                     </Alert>
                   ) : (
-                    <Table striped bordered hover responsive>
-                      <thead>
-                        <tr>
-                          <th>Loại phí</th>
-                          <th>Số tiền</th>
-                          <th>Tháng hiện tại</th>
-                          <th>Tháng trước</th>
-                          <th>Thao tác</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {feeStatus.map((fee) => (
-                          <tr key={fee._id}>
-                            <td>{fee.name}</td>
-                            <td>{fee.amount.toLocaleString('vi-VN')} VND</td>
-                            <td>{getStatusBadge(fee.currentMonthStatus)}</td>
-                            <td>
-                              {getStatusBadge(fee.lastMonthStatus)}
-                              {fee.lastMonthStatus === 'overdue' && (
-                                <span className="ms-2 text-danger">
-                                  <i className="fas fa-exclamation-triangle"></i>
-                                </span>
-                              )}
-                            </td>
-                            <td>
+                    <Row xs={1} md={2} lg={3} className="g-3">
+                      {feeStatus.map((fee) => (
+                        <Col key={fee._id}>
+                          <Card className="h-100 border-info shadow-sm">
+                            <Card.Body>
+                              <div className="d-flex align-items-center mb-2">
+                                <i className="fas fa-coins fa-lg text-info me-2"></i>
+                                <Card.Title className="mb-0">{fee.name}</Card.Title>
+                              </div>
+                              <div className="mb-2">
+                                <strong>Số tiền:</strong> <span className="text-primary">{fee.amount.toLocaleString('vi-VN')} VND</span>
+                              </div>
+                              <div className="mb-2">
+                                <strong>Tháng hiện tại:</strong> {getStatusBadge(fee.currentMonthStatus)}
+                              </div>
+                              <div className="mb-2">
+                                <strong>Tháng trước:</strong> {getStatusBadge(fee.lastMonthStatus)}
+                                {fee.lastMonthStatus === 'overdue' && (
+                                  <span className="ms-2 text-danger">
+                                    <i className="fas fa-exclamation-triangle"></i>
+                                  </span>
+                                )}
+                              </div>
+                            </Card.Body>
+                            <Card.Footer className="bg-white border-0 d-flex justify-content-end gap-2">
                               {fee.currentMonthStatus === 'pending' && (
                                 <Button 
                                   variant="success" 
@@ -275,11 +264,11 @@ const HouseholdDetailScreen = () => {
                                   <i className="fas fa-exclamation-circle"></i> Thanh toán nợ
                                 </Button>
                               )}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </Table>
+                            </Card.Footer>
+                          </Card>
+                        </Col>
+                      ))}
+                    </Row>
                   )}
                 </Card.Body>
               </Card>

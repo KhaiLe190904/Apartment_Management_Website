@@ -23,54 +23,70 @@ const Header = () => {
     }
   };
   
+  // Lấy chữ cái đầu cho avatar
+  const getInitial = (name) => {
+    if (!name) return 'U';
+    return name.trim().charAt(0).toUpperCase();
+  };
+  
   return (
     <header>
-      <Navbar bg="primary" variant="dark" expand="lg" collapseOnSelect>
-        <Container>
+      <Navbar
+        expand="lg"
+        className="py-2 px-0"
+        style={{
+          background: 'linear-gradient(90deg, #00CCFF 60%, #e0faff 100%)',
+          borderRadius: '0 0 1.5rem 1.5rem',
+          boxShadow: '0 2px 16px 0 rgba(0,204,255,0.13)',
+        }}
+      >
+        <Container fluid>
           <LinkContainer to={userInfo ? '/dashboard' : '/'}>
-            <Navbar.Brand>
-              <i className="fas fa-building"></i> Chung Cư BlueMoon
+            <Navbar.Brand className="d-flex align-items-center gap-2 fw-bold fs-4 text-dark">
+              <span className="d-inline-flex align-items-center justify-content-center bg-white bg-opacity-75 rounded-circle shadow-sm" style={{width: 44, height: 44}}>
+                <i className="bi bi-building text-primary" style={{fontSize: 28}}></i>
+              </span>
+              <span className="ms-2" style={{letterSpacing: 1}}>Chung Cư BlueMoon</span>
             </Navbar.Brand>
           </LinkContainer>
           
-          <Navbar.Toggle aria-controls="basic-navbar-nav" />
-          <Navbar.Collapse id="basic-navbar-nav">
-            <Nav className="ms-auto">
+          <Navbar.Toggle aria-controls="main-navbar" />
+          <Navbar.Collapse id="main-navbar">
+            <Nav className="ms-auto align-items-center gap-2 gap-lg-3 fw-semibold">
               {userInfo ? (
                 <>
-                  {/* Navigation items for all authenticated administrative users */}
                   <LinkContainer to="/dashboard">
-                    <Nav.Link>
-                      <i className="fas fa-chart-line"></i> Tổng quan
+                    <Nav.Link className="nav-link-custom">
+                      <i className="bi bi-speedometer2 me-1"></i> Tổng quan
                     </Nav.Link>
                   </LinkContainer>
                   
                   <LinkContainer to="/households">
-                    <Nav.Link>
-                      <i className="fas fa-home"></i> Hộ gia đình
+                    <Nav.Link className="nav-link-custom">
+                      <i className="bi bi-house-door me-1"></i> Hộ gia đình
                     </Nav.Link>
                   </LinkContainer>
                   
                   <LinkContainer to="/residents">
-                    <Nav.Link>
-                      <i className="fas fa-users"></i> Cư dân
+                    <Nav.Link className="nav-link-custom">
+                      <i className="bi bi-people me-1"></i> Cư dân
                     </Nav.Link>
                   </LinkContainer>
                   
                   <LinkContainer to="/fees">
-                    <Nav.Link>
-                      <i className="fas fa-file-invoice-dollar"></i> Phí
+                    <Nav.Link className="nav-link-custom">
+                      <i className="bi bi-cash-stack me-1"></i> Phí
                     </Nav.Link>
                   </LinkContainer>
                   
-                  {/* Payments dropdown menu */}
                   <NavDropdown
                     title={
                       <>
-                        <i className="fas fa-money-bill-wave"></i> Thanh toán
+                        <i className="bi bi-credit-card-2-front me-1"></i> Thanh toán
                       </>
                     }
                     id="payment-menu"
+                    className="nav-link-custom"
                   >
                     <LinkContainer to="/payments">
                       <NavDropdown.Item>Danh sách thanh toán</NavDropdown.Item>
@@ -84,34 +100,39 @@ const Header = () => {
                   </NavDropdown>
                   
                   {/* User dropdown menu */}
-                  <NavDropdown 
+                  <NavDropdown
+                    align="end"
                     title={
-                      <>
-                        <i className="fas fa-user"></i> {userInfo.name || userInfo.username} 
-                        <span className="ms-1">({formatUserRole(userInfo.role)})</span>
-                      </>
-                    } 
+                      <span className="d-flex align-items-center gap-2 user-dropdown-toggle">
+                        <span className="d-inline-flex align-items-center justify-content-center bg-primary text-white rounded-circle" style={{width: 36, height: 36, fontWeight: 700, fontSize: 18}}>
+                          {getInitial(userInfo.name || userInfo.username)}
+                        </span>
+                        <span className="fw-bold">{userInfo.name || userInfo.username}</span>
+                        <span className="text-muted small">({formatUserRole(userInfo.role)})</span>
+                      </span>
+                    }
                     id="username"
+                    className="nav-link-custom user-dropdown-align"
                   >
                     <LinkContainer to="/profile">
                       <NavDropdown.Item>Hồ sơ</NavDropdown.Item>
                     </LinkContainer>
-                    <NavDropdown.Item onClick={logout}>
+                    <NavDropdown.Item onClick={logout} className="text-danger fw-bold">
                       Đăng xuất
                     </NavDropdown.Item>
                   </NavDropdown>
                 </>
               ) : (
                 <LinkContainer to="/login">
-                  <Nav.Link>
-                    <i className="fas fa-user"></i> Đăng nhập
+                  <Nav.Link className="nav-link-custom px-4 py-2 rounded-pill bg-white text-primary fw-bold shadow-sm" style={{fontSize: '1.08rem', border: '1.5px solid #00CCFF'}}>
+                    <i className="bi bi-person-circle me-1"></i> Đăng nhập
                   </Nav.Link>
                 </LinkContainer>
               )}
               
               {/* Admin menu - only show if user is admin */}
               {isAdmin() && (
-                <NavDropdown title="Quản trị" id="adminmenu">
+                <NavDropdown title={<span><i className="bi bi-shield-lock me-1"></i>Quản trị</span>} id="adminmenu" className="nav-link-custom">
                   <LinkContainer to="/users">
                     <NavDropdown.Item>Quản lý người dùng</NavDropdown.Item>
                   </LinkContainer>
@@ -123,7 +144,7 @@ const Header = () => {
               
               {/* Manager menu - only show if user is manager */}
               {isManager() && (
-                <NavDropdown title="Quản lý" id="managermenu">
+                <NavDropdown title={<span><i className="bi bi-person-gear me-1"></i>Quản lý</span>} id="managermenu" className="nav-link-custom">
                   <LinkContainer to="/admin/reports">
                     <NavDropdown.Item>Báo cáo</NavDropdown.Item>
                   </LinkContainer>
@@ -133,6 +154,10 @@ const Header = () => {
           </Navbar.Collapse>
         </Container>
       </Navbar>
+      {/* Thêm CSS custom cho nav-link-custom vào custom-theme.css:
+      .nav-link-custom { font-size: 1.08rem !important; border-radius: 1.2rem; padding: 0.5rem 1.2rem; transition: background 0.18s, color 0.18s; }
+      .nav-link-custom:hover, .nav-link-custom:focus, .nav-link-custom.active { background: #e0faff !important; color: #00CCFF !important; }
+      */}
     </header>
   );
 };

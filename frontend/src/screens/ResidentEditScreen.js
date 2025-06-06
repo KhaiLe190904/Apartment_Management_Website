@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { Form, Button, Row, Col } from 'react-bootstrap';
+import { Form, Button, Row, Col, Card } from 'react-bootstrap';
 import { Link, useNavigate, useParams, useLocation } from 'react-router-dom';
 import Message from '../components/Message';
 import Loader from '../components/Loader';
@@ -199,235 +199,222 @@ const ResidentEditScreen = () => {
         <i className="fas fa-arrow-left"></i> Quay lại Danh sách Cư dân
       </Link>
       
-      <FormContainer>
-        <h1>{isEditMode ? 'Chỉnh Sửa Cư Dân' : 'Thêm Cư Dân Mới'}</h1>
-        
-        {error && <Message variant='danger'>{error}</Message>}
-        {success && (
-          <Message variant='success'>
-            {isEditMode ? 'Cư dân đã được cập nhật' : 'Cư dân đã được tạo thành công'}
-          </Message>
-        )}
-        {loading && <Loader />}
-        
-        <Form onSubmit={submitHandler}>
-          <Form.Group controlId='fullName' className='mb-3'>
-            <Form.Label>Họ và Tên</Form.Label>
-            <Form.Control
-              type='text'
-              placeholder='Nhập họ và tên'
-              value={fullName}
-              onChange={(e) => setFullName(e.target.value)}
-              isInvalid={!!validationErrors.fullName}
-              required
-            />
-            <Form.Control.Feedback type='invalid'>
-              {validationErrors.fullName}
-            </Form.Control.Feedback>
-          </Form.Group>
-          
-          <Row>
-            <Col md={6}>
-              <Form.Group controlId='dateOfBirth' className='mb-3'>
-                <Form.Label>Ngày Sinh</Form.Label>
-                <Form.Control
-                  type='date'
-                  value={dateOfBirth}
-                  onChange={(e) => setDateOfBirth(e.target.value)}
-                />
-              </Form.Group>
-            </Col>
-            
-            <Col md={6}>
-              <Form.Group controlId='gender' className='mb-3'>
-                <Form.Label>Giới Tính</Form.Label>
-                <Form.Select
-                  value={gender}
-                  onChange={(e) => setGender(e.target.value)}
-                  isInvalid={!!validationErrors.gender}
-                  required
-                >
-                  <option value=''>Chọn giới tính</option>
-                  <option value='male'>Nam</option>
-                  <option value='female'>Nữ</option>
-                  <option value='other'>Khác</option>
-                </Form.Select>
-                <Form.Control.Feedback type='invalid'>
-                  {validationErrors.gender}
-                </Form.Control.Feedback>
-              </Form.Group>
-            </Col>
-          </Row>
-          
-          <Form.Group controlId='idCard' className='mb-3'>
-            <Form.Label>CMND/CCCD</Form.Label>
-            <Form.Control
-              type='text'
-              placeholder='Nhập CMND/CCCD'
-              value={idCard}
-              onChange={(e) => setIdCard(e.target.value)}
-              isInvalid={!!validationErrors.idCard}
-            />
-            <Form.Control.Feedback type='invalid'>
-              {validationErrors.idCard}
-            </Form.Control.Feedback>
-          </Form.Group>
-          
-          <Row>
-            <Col md={6}>
-              <Form.Group controlId='idCardDate' className='mb-3'>
-                <Form.Label>Ngày Cấp</Form.Label>
-                <Form.Control
-                  type='date'
-                  value={idCardDate}
-                  onChange={(e) => setIdCardDate(e.target.value)}
-                />
-              </Form.Group>
-            </Col>
-            
-            <Col md={6}>
-              <Form.Group controlId='idCardPlace' className='mb-3'>
-                <Form.Label>Nơi Cấp</Form.Label>
-                <Form.Control
-                  type='text'
-                  placeholder='Nhập nơi cấp CMND/CCCD'
-                  value={idCardPlace}
-                  onChange={(e) => setIdCardPlace(e.target.value)}
-                />
-              </Form.Group>
-            </Col>
-          </Row>
-          
-          <Form.Group controlId='placeOfBirth' className='mb-3'>
-            <Form.Label>Nơi Sinh</Form.Label>
-            <Form.Control
-              type='text'
-              placeholder='Nhập nơi sinh'
-              value={placeOfBirth}
-              onChange={(e) => setPlaceOfBirth(e.target.value)}
-            />
-          </Form.Group>
-          
-          <Row>
-            <Col md={4}>
-              <Form.Group controlId='nationality' className='mb-3'>
-                <Form.Label>Quốc Tịch</Form.Label>
-                <Form.Control
-                  type='text'
-                  placeholder='Nhập quốc tịch'
-                  value={nationality}
-                  onChange={(e) => setNationality(e.target.value)}
-                />
-              </Form.Group>
-            </Col>
-            
-            <Col md={4}>
-              <Form.Group controlId='ethnicity' className='mb-3'>
-                <Form.Label>Dân Tộc</Form.Label>
-                <Form.Control
-                  type='text'
-                  placeholder='Nhập dân tộc'
-                  value={ethnicity}
-                  onChange={(e) => setEthnicity(e.target.value)}
-                />
-              </Form.Group>
-            </Col>
-            
-            <Col md={4}>
-              <Form.Group controlId='religion' className='mb-3'>
-                <Form.Label>Tôn Giáo</Form.Label>
-                <Form.Control
-                  type='text'
-                  placeholder='Nhập tôn giáo'
-                  value={religion}
-                  onChange={(e) => setReligion(e.target.value)}
-                />
-              </Form.Group>
-            </Col>
-          </Row>
-          
-          <Row>
-            <Col md={6}>
-              <Form.Group controlId='occupation' className='mb-3'>
-                <Form.Label>Nghề Nghiệp</Form.Label>
-                <Form.Control
-                  type='text'
-                  placeholder='Nhập nghề nghiệp'
-                  value={occupation}
-                  onChange={(e) => setOccupation(e.target.value)}
-                />
-              </Form.Group>
-            </Col>
-            
-            <Col md={6}>
-              <Form.Group controlId='workplace' className='mb-3'>
-                <Form.Label>Nơi Làm Việc</Form.Label>
-                <Form.Control
-                  type='text'
-                  placeholder='Nhập nơi làm việc'
-                  value={workplace}
-                  onChange={(e) => setWorkplace(e.target.value)}
-                />
-              </Form.Group>
-            </Col>
-          </Row>
-          
-          <Form.Group controlId='phone' className='mb-3'>
-            <Form.Label>Số Điện Thoại</Form.Label>
-            <Form.Control
-              type='text'
-              placeholder='Nhập số điện thoại'
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              isInvalid={!!validationErrors.phone}
-            />
-            <Form.Control.Feedback type='invalid'>
-              {validationErrors.phone}
-            </Form.Control.Feedback>
-          </Form.Group>
-          
-          <Form.Group controlId='household' className='mb-3'>
-            <Form.Label>Hộ Gia Đình</Form.Label>
-            <Form.Select
-              value={householdId}
-              onChange={(e) => setHouseholdId(e.target.value)}
-            >
-              <option value=''>Không thuộc hộ nào</option>
-              {households.map((household) => (
-                <option key={household._id} value={household._id}>
-                  {household.apartmentNumber}
-                </option>
-              ))}
-            </Form.Select>
-          </Form.Group>
-          
-          <Form.Group controlId='note' className='mb-3'>
-            <Form.Label>Ghi Chú</Form.Label>
-            <Form.Control
-              as='textarea'
-              rows={3}
-              placeholder='Nhập ghi chú (không bắt buộc)'
-              value={note}
-              onChange={(e) => setNote(e.target.value)}
-            />
-          </Form.Group>
-          
-          {isEditMode && (
-            <Form.Group controlId='active' className='mb-3'>
-              <Form.Check
-                type='checkbox'
-                label='Đang hoạt động'
-                checked={active}
-                onChange={(e) => setActive(e.target.checked)}
+      <Card className="shadow-lg border-success mb-4">
+        <Card.Header className="bg-success text-white d-flex align-items-center">
+          <i className="fas fa-user-edit fa-lg me-2"></i>
+          <h1 className="mb-0" style={{ fontSize: '1.5rem' }}>{isEditMode ? 'Chỉnh Sửa Cư Dân' : 'Thêm Cư Dân Mới'}</h1>
+        </Card.Header>
+        <Card.Body>
+          {error && <Message variant='danger'>{error}</Message>}
+          {success && (
+            <Message variant='success'>
+              {isEditMode ? 'Cư dân đã được cập nhật' : 'Cư dân đã được tạo thành công'}
+            </Message>
+          )}
+          {loading && <Loader />}
+          <Form onSubmit={submitHandler} className="p-2">
+            <Form.Group controlId='fullName' className='mb-3'>
+              <Form.Label><i className="fas fa-id-card me-1 text-primary"></i> Họ và Tên</Form.Label>
+              <Form.Control
+                type='text'
+                placeholder='Nhập họ và tên...'
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+                isInvalid={!!validationErrors.fullName}
+                required
+              />
+              <Form.Control.Feedback type='invalid'>
+                {validationErrors.fullName}
+              </Form.Control.Feedback>
+            </Form.Group>
+            <Row>
+              <Col md={6}>
+                <Form.Group controlId='dateOfBirth' className='mb-3'>
+                  <Form.Label><i className="fas fa-calendar-day me-1 text-info"></i> Ngày Sinh</Form.Label>
+                  <Form.Control
+                    type='date'
+                    value={dateOfBirth}
+                    onChange={(e) => setDateOfBirth(e.target.value)}
+                  />
+                </Form.Group>
+              </Col>
+              <Col md={6}>
+                <Form.Group controlId='gender' className='mb-3'>
+                  <Form.Label><i className="fas fa-venus-mars me-1 text-danger"></i> Giới Tính</Form.Label>
+                  <Form.Select
+                    value={gender}
+                    onChange={(e) => setGender(e.target.value)}
+                    isInvalid={!!validationErrors.gender}
+                    required
+                  >
+                    <option value=''>Chọn giới tính</option>
+                    <option value='male'>Nam</option>
+                    <option value='female'>Nữ</option>
+                    <option value='other'>Khác</option>
+                  </Form.Select>
+                  <Form.Control.Feedback type='invalid'>
+                    {validationErrors.gender}
+                  </Form.Control.Feedback>
+                </Form.Group>
+              </Col>
+            </Row>
+            <Form.Group controlId='idCard' className='mb-3'>
+              <Form.Label><i className="fas fa-id-badge me-1 text-warning"></i> CMND/CCCD</Form.Label>
+              <Form.Control
+                type='text'
+                placeholder='Nhập CMND/CCCD...'
+                value={idCard}
+                onChange={(e) => setIdCard(e.target.value)}
+                isInvalid={!!validationErrors.idCard}
+              />
+              <Form.Control.Feedback type='invalid'>
+                {validationErrors.idCard}
+              </Form.Control.Feedback>
+            </Form.Group>
+            <Row>
+              <Col md={6}>
+                <Form.Group controlId='idCardDate' className='mb-3'>
+                  <Form.Label><i className="fas fa-calendar-plus me-1 text-secondary"></i> Ngày Cấp</Form.Label>
+                  <Form.Control
+                    type='date'
+                    value={idCardDate}
+                    onChange={(e) => setIdCardDate(e.target.value)}
+                  />
+                </Form.Group>
+              </Col>
+              <Col md={6}>
+                <Form.Group controlId='idCardPlace' className='mb-3'>
+                  <Form.Label><i className="fas fa-map-marker-alt me-1 text-info"></i> Nơi Cấp</Form.Label>
+                  <Form.Control
+                    type='text'
+                    placeholder='Nhập nơi cấp CMND/CCCD...'
+                    value={idCardPlace}
+                    onChange={(e) => setIdCardPlace(e.target.value)}
+                  />
+                </Form.Group>
+              </Col>
+            </Row>
+            <Form.Group controlId='placeOfBirth' className='mb-3'>
+              <Form.Label><i className="fas fa-map-pin me-1 text-success"></i> Nơi Sinh</Form.Label>
+              <Form.Control
+                type='text'
+                placeholder='Nhập nơi sinh...'
+                value={placeOfBirth}
+                onChange={(e) => setPlaceOfBirth(e.target.value)}
               />
             </Form.Group>
-          )}
-          
-          <Button type='submit' variant='primary' className='mt-3'>
-            {isEditMode ? 'Cập Nhật' : 'Tạo Mới'}
-          </Button>
-        </Form>
-      </FormContainer>
+            <Row>
+              <Col md={4}>
+                <Form.Group controlId='nationality' className='mb-3'>
+                  <Form.Label><i className="fas fa-flag me-1 text-primary"></i> Quốc Tịch</Form.Label>
+                  <Form.Control
+                    type='text'
+                    placeholder='Nhập quốc tịch...'
+                    value={nationality}
+                    onChange={(e) => setNationality(e.target.value)}
+                  />
+                </Form.Group>
+              </Col>
+              <Col md={4}>
+                <Form.Group controlId='ethnicity' className='mb-3'>
+                  <Form.Label><i className="fas fa-users me-1 text-secondary"></i> Dân Tộc</Form.Label>
+                  <Form.Control
+                    type='text'
+                    placeholder='Nhập dân tộc...'
+                    value={ethnicity}
+                    onChange={(e) => setEthnicity(e.target.value)}
+                  />
+                </Form.Group>
+              </Col>
+              <Col md={4}>
+                <Form.Group controlId='religion' className='mb-3'>
+                  <Form.Label><i className="fas fa-praying-hands me-1 text-warning"></i> Tôn Giáo</Form.Label>
+                  <Form.Control
+                    type='text'
+                    placeholder='Nhập tôn giáo...'
+                    value={religion}
+                    onChange={(e) => setReligion(e.target.value)}
+                  />
+                </Form.Group>
+              </Col>
+            </Row>
+            <Row>
+              <Col md={6}>
+                <Form.Group controlId='occupation' className='mb-3'>
+                  <Form.Label><i className="fas fa-briefcase me-1 text-info"></i> Nghề Nghiệp</Form.Label>
+                  <Form.Control
+                    type='text'
+                    placeholder='Nhập nghề nghiệp...'
+                    value={occupation}
+                    onChange={(e) => setOccupation(e.target.value)}
+                  />
+                </Form.Group>
+              </Col>
+              <Col md={6}>
+                <Form.Group controlId='workplace' className='mb-3'>
+                  <Form.Label><i className="fas fa-building me-1 text-success"></i> Nơi Làm Việc</Form.Label>
+                  <Form.Control
+                    type='text'
+                    placeholder='Nhập nơi làm việc...'
+                    value={workplace}
+                    onChange={(e) => setWorkplace(e.target.value)}
+                  />
+                </Form.Group>
+              </Col>
+            </Row>
+            <Form.Group controlId='phone' className='mb-3'>
+              <Form.Label><i className="fas fa-phone me-1 text-primary"></i> Số Điện Thoại</Form.Label>
+              <Form.Control
+                type='text'
+                placeholder='Nhập số điện thoại...'
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                isInvalid={!!validationErrors.phone}
+              />
+              <Form.Control.Feedback type='invalid'>
+                {validationErrors.phone}
+              </Form.Control.Feedback>
+            </Form.Group>
+            <Form.Group controlId='household' className='mb-3'>
+              <Form.Label><i className="fas fa-home me-1 text-info"></i> Hộ Gia Đình</Form.Label>
+              <Form.Select
+                value={householdId}
+                onChange={(e) => setHouseholdId(e.target.value)}
+              >
+                <option value=''>Không thuộc hộ nào</option>
+                {households.map((household) => (
+                  <option key={household._id} value={household._id}>
+                    {household.apartmentNumber}
+                  </option>
+                ))}
+              </Form.Select>
+            </Form.Group>
+            <Form.Group controlId='note' className='mb-3'>
+              <Form.Label><i className="fas fa-sticky-note me-1 text-secondary"></i> Ghi Chú</Form.Label>
+              <Form.Control
+                as='textarea'
+                rows={3}
+                placeholder='Thêm ghi chú cho cư dân (không bắt buộc)'
+                value={note}
+                onChange={(e) => setNote(e.target.value)}
+              />
+            </Form.Group>
+            {isEditMode && (
+              <Form.Group controlId='active' className='mb-3'>
+                <Form.Check
+                  type='checkbox'
+                  label={<span><i className="fas fa-toggle-on me-1 text-success"></i> Đang hoạt động</span>}
+                  checked={active}
+                  onChange={(e) => setActive(e.target.checked)}
+                />
+              </Form.Group>
+            )}
+            <Button type='submit' variant='success' className='mt-3 w-100 shadow-sm' size="lg">
+              {isEditMode ? <><i className="fas fa-save me-2"></i> Cập Nhật</> : <><i className="fas fa-plus-circle me-2"></i> Tạo Mới</>}
+            </Button>
+          </Form>
+        </Card.Body>
+      </Card>
     </>
   );
 };

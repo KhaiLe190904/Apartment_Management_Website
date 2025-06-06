@@ -98,53 +98,56 @@ const PaymentSearchScreen = () => {
   
   return (
     <>
-      <h1 className="mb-4">Tìm Kiếm Thanh Toán</h1>
+      <h1 className="mb-4 d-flex align-items-center text-primary">
+        <i className="fas fa-search-dollar me-2"></i> Tìm Kiếm Thanh Toán
+      </h1>
       
-      <Card className="mb-4 shadow">
+      <Card className="mb-4 shadow-lg border-info">
+        <Card.Header className="bg-info text-white d-flex align-items-center">
+          <i className="fas fa-filter me-2"></i>
+          <span className="fw-bold">Bộ lọc tìm kiếm</span>
+        </Card.Header>
         <Card.Body>
-          <Form onSubmit={searchPayments}>
+          <Form onSubmit={searchPayments} className="p-2">
             <Row>
               <Col md={6}>
                 <Form.Group controlId="apartmentNumber" className="mb-3">
-                  <Form.Label>Số Căn Hộ</Form.Label>
+                  <Form.Label><i className="fas fa-home me-1 text-primary"></i> Số Căn Hộ</Form.Label>
                   <Form.Control
                     type="text"
-                    placeholder="Nhập số căn hộ"
+                    placeholder="Nhập số căn hộ..."
                     value={apartmentNumber}
                     onChange={(e) => setApartmentNumber(e.target.value)}
                   />
                 </Form.Group>
               </Col>
-              
               <Col md={6}>
                 <Form.Group controlId="payerName" className="mb-3">
-                  <Form.Label>Tên Người Nộp</Form.Label>
+                  <Form.Label><i className="fas fa-user me-1 text-success"></i> Tên Người Nộp</Form.Label>
                   <Form.Control
                     type="text"
-                    placeholder="Nhập tên người nộp"
+                    placeholder="Nhập tên người nộp..."
                     value={payerName}
                     onChange={(e) => setPayerName(e.target.value)}
                   />
                 </Form.Group>
               </Col>
             </Row>
-            
             <Row>
               <Col md={6}>
                 <Form.Group controlId="feeName" className="mb-3">
-                  <Form.Label>Tên Phí</Form.Label>
+                  <Form.Label><i className="fas fa-coins me-1 text-warning"></i> Tên Phí</Form.Label>
                   <Form.Control
                     type="text"
-                    placeholder="Nhập tên phí"
+                    placeholder="Nhập tên phí..."
                     value={feeName}
                     onChange={(e) => setFeeName(e.target.value)}
                   />
                 </Form.Group>
               </Col>
-              
               <Col md={6}>
                 <Form.Group controlId="feeType" className="mb-3">
-                  <Form.Label>Loại Phí</Form.Label>
+                  <Form.Label><i className="fas fa-tags me-1 text-info"></i> Loại Phí</Form.Label>
                   <Form.Select
                     value={feeType}
                     onChange={(e) => setFeeType(e.target.value)}
@@ -165,11 +168,10 @@ const PaymentSearchScreen = () => {
                 </Form.Group>
               </Col>
             </Row>
-            
             <Row>
               <Col md={3}>
                 <Form.Group controlId="startDate" className="mb-3">
-                  <Form.Label>Từ Ngày</Form.Label>
+                  <Form.Label><i className="fas fa-calendar-day me-1 text-secondary"></i> Từ Ngày</Form.Label>
                   <Form.Control
                     type="date"
                     value={startDate}
@@ -177,10 +179,9 @@ const PaymentSearchScreen = () => {
                   />
                 </Form.Group>
               </Col>
-              
               <Col md={3}>
                 <Form.Group controlId="endDate" className="mb-3">
-                  <Form.Label>Đến Ngày</Form.Label>
+                  <Form.Label><i className="fas fa-calendar-day me-1 text-secondary"></i> Đến Ngày</Form.Label>
                   <Form.Control
                     type="date"
                     value={endDate}
@@ -188,10 +189,9 @@ const PaymentSearchScreen = () => {
                   />
                 </Form.Group>
               </Col>
-              
               <Col md={3}>
                 <Form.Group controlId="minAmount" className="mb-3">
-                  <Form.Label>Số Tiền Tối Thiểu</Form.Label>
+                  <Form.Label><i className="fas fa-sort-amount-down me-1 text-primary"></i> Số Tiền Tối Thiểu</Form.Label>
                   <Form.Control
                     type="number"
                     placeholder="VND"
@@ -201,10 +201,9 @@ const PaymentSearchScreen = () => {
                   />
                 </Form.Group>
               </Col>
-              
               <Col md={3}>
                 <Form.Group controlId="maxAmount" className="mb-3">
-                  <Form.Label>Số Tiền Tối Đa</Form.Label>
+                  <Form.Label><i className="fas fa-sort-amount-up me-1 text-danger"></i> Số Tiền Tối Đa</Form.Label>
                   <Form.Control
                     type="number"
                     placeholder="VND"
@@ -215,13 +214,12 @@ const PaymentSearchScreen = () => {
                 </Form.Group>
               </Col>
             </Row>
-            
-            <div className="d-flex justify-content-between mt-3">
-              <Button variant="secondary" onClick={clearForm}>
-                Xóa Bộ Lọc
+            <div className="d-flex justify-content-between mt-3 gap-2">
+              <Button variant="secondary" onClick={clearForm} className="w-50">
+                <i className="fas fa-eraser me-1"></i> Xóa Bộ Lọc
               </Button>
-              <Button type="submit" variant="primary">
-                Tìm Kiếm
+              <Button type="submit" variant="info" className="w-50">
+                <i className="fas fa-search me-1"></i> Tìm Kiếm
               </Button>
             </div>
           </Form>
@@ -234,24 +232,29 @@ const PaymentSearchScreen = () => {
         <Message variant="danger">{error}</Message>
       ) : searched ? (
         <>
-          <h2 className="mb-3">Kết Quả Tìm Kiếm</h2>
-          
+          <h2 className="mb-3 d-flex align-items-center text-success">
+            <i className="fas fa-list me-2"></i> Kết Quả Tìm Kiếm
+          </h2>
           {payments.length === 0 ? (
             <Message>Không tìm thấy thanh toán nào phù hợp</Message>
           ) : (
-            <Card className="shadow">
+            <Card className="shadow-lg border-success">
+              <Card.Header className="bg-success text-white d-flex align-items-center">
+                <i className="fas fa-table me-2"></i>
+                <span className="fw-bold">Bảng kết quả</span>
+              </Card.Header>
               <Card.Body>
                 <div className="table-responsive">
                   <Table striped bordered hover>
                     <thead>
                       <tr>
-                        <th>Căn Hộ</th>
-                        <th>Loại Phí</th>
-                        <th>Số Tiền</th>
-                        <th>Ngày Thanh Toán</th>
-                        <th>Người Nộp</th>
-                        <th>Ghi Chú</th>
-                        <th>Thao Tác</th>
+                        <th><i className="fas fa-home"></i> Căn Hộ</th>
+                        <th><i className="fas fa-coins"></i> Loại Phí</th>
+                        <th><i className="fas fa-money-bill-wave"></i> Số Tiền</th>
+                        <th><i className="fas fa-calendar-day"></i> Ngày Thanh Toán</th>
+                        <th><i className="fas fa-user"></i> Người Nộp</th>
+                        <th><i className="fas fa-sticky-note"></i> Ghi Chú</th>
+                        <th><i className="fas fa-cogs"></i> Thao Tác</th>
                       </tr>
                     </thead>
                     <tbody>

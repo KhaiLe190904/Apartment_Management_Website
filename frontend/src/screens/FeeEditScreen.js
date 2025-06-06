@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { Form, Button, Row, Col } from 'react-bootstrap';
+import { Form, Button, Row, Col, Card } from 'react-bootstrap';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import Message from '../components/Message';
 import Loader from '../components/Loader';
@@ -142,132 +142,127 @@ const FeeEditScreen = () => {
         <i className="fas fa-arrow-left"></i> Quay lại Phí
       </Link>
       
-      <FormContainer>
-        <h1>{isEditMode ? 'Chỉnh Sửa Phí' : 'Tạo Phí Mới'}</h1>
-        
-        {error && <Message variant='danger'>{error}</Message>}
-        {success && <Message variant='success'>{isEditMode ? 'Phí đã được cập nhật' : 'Phí đã được tạo'}</Message>}
-        {loading && <Loader />}
-        
-        <Form onSubmit={submitHandler}>
-          <Form.Group controlId='feeCode' className='mb-3'>
-            <Form.Label>Mã Phí</Form.Label>
-            <Form.Control
-              type='text'
-              placeholder='Nhập mã phí'
-              value={feeCode}
-              onChange={(e) => setFeeCode(e.target.value)}
-              isInvalid={!!validationErrors.feeCode}
-              required
-            />
-            <Form.Control.Feedback type='invalid'>
-              {validationErrors.feeCode}
-            </Form.Control.Feedback>
-          </Form.Group>
-          
-          <Form.Group controlId='name' className='mb-3'>
-            <Form.Label>Tên Phí</Form.Label>
-            <Form.Control
-              type='text'
-              placeholder='Nhập tên phí'
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              isInvalid={!!validationErrors.name}
-              required
-            />
-            <Form.Control.Feedback type='invalid'>
-              {validationErrors.name}
-            </Form.Control.Feedback>
-          </Form.Group>
-          
-          <Form.Group controlId='amount' className='mb-3'>
-            <Form.Label>Số Tiền</Form.Label>
-            <Form.Control
-              type='number'
-              placeholder='Nhập số tiền'
-              value={amount}
-              onChange={(e) => setAmount(e.target.value)}
-              isInvalid={!!validationErrors.amount}
-              required
-              min="0"
-              step="0.01"
-            />
-            <Form.Control.Feedback type='invalid'>
-              {validationErrors.amount}
-            </Form.Control.Feedback>
-          </Form.Group>
-          
-          <Form.Group controlId='feeType' className='mb-3'>
-            <Form.Label>Loại Phí</Form.Label>
-            <Form.Select
-              value={feeType}
-              onChange={(e) => setFeeType(e.target.value)}
-            >
-              <option value='mandatory'>Bắt buộc</option>
-              <option value='service'>Dịch vụ</option>
-              <option value='maintenance'>Bảo trì</option>
-              <option value='water'>Nước</option>
-              <option value='electricity'>Điện</option>
-              <option value='parking'>Đỗ xe</option>
-              <option value='internet'>Internet</option>
-              <option value='security'>An ninh</option>
-              <option value='cleaning'>Vệ sinh</option>
-              <option value='contribution'>Đóng góp</option>
-              <option value='other'>Khác</option>
-            </Form.Select>
-          </Form.Group>
-          
-          <Form.Group controlId='description' className='mb-3'>
-            <Form.Label>Mô Tả</Form.Label>
-            <Form.Control
-              as='textarea'
-              rows={3}
-              placeholder='Nhập mô tả (không bắt buộc)'
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-            />
-          </Form.Group>
-          
-          <Row>
-            <Col md={6}>
-              <Form.Group controlId='startDate' className='mb-3'>
-                <Form.Label>Ngày Bắt Đầu</Form.Label>
-                <Form.Control
-                  type='date'
-                  value={startDate}
-                  onChange={(e) => setStartDate(e.target.value)}
-                />
-              </Form.Group>
-            </Col>
-            
-            <Col md={6}>
-              <Form.Group controlId='endDate' className='mb-3'>
-                <Form.Label>Ngày Kết Thúc</Form.Label>
-                <Form.Control
-                  type='date'
-                  value={endDate}
-                  onChange={(e) => setEndDate(e.target.value)}
-                />
-              </Form.Group>
-            </Col>
-          </Row>
-          
-          {isEditMode && (
-            <Form.Group controlId='active' className='mb-3'>
-              <Form.Check
-                type='checkbox'
-                label='Hoạt động'
-                checked={active}
-                onChange={(e) => setActive(e.target.checked)}
+      <Card className="shadow-lg border-warning mb-4">
+        <Card.Header className="bg-warning text-dark d-flex align-items-center">
+          <i className="fas fa-coins fa-lg me-2"></i>
+          <h1 className="mb-0" style={{ fontSize: '1.5rem' }}>{isEditMode ? 'Chỉnh Sửa Phí' : 'Tạo Phí Mới'}</h1>
+        </Card.Header>
+        <Card.Body>
+          {error && <Message variant='danger'>{error}</Message>}
+          {success && <Message variant='success'>{isEditMode ? 'Phí đã được cập nhật' : 'Phí đã được tạo'}</Message>}
+          {loading && <Loader />}
+          <Form onSubmit={submitHandler} className="p-2">
+            <Form.Group controlId='feeCode' className='mb-3'>
+              <Form.Label><i className="fas fa-barcode me-1 text-primary"></i> Mã Phí</Form.Label>
+              <Form.Control
+                type='text'
+                placeholder='Nhập mã phí...'
+                value={feeCode}
+                onChange={(e) => setFeeCode(e.target.value)}
+                isInvalid={!!validationErrors.feeCode}
+                required
+              />
+              <Form.Control.Feedback type='invalid'>
+                {validationErrors.feeCode}
+              </Form.Control.Feedback>
+            </Form.Group>
+            <Form.Group controlId='name' className='mb-3'>
+              <Form.Label><i className="fas fa-file-signature me-1 text-success"></i> Tên Phí</Form.Label>
+              <Form.Control
+                type='text'
+                placeholder='Nhập tên phí...'
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                isInvalid={!!validationErrors.name}
+                required
+              />
+              <Form.Control.Feedback type='invalid'>
+                {validationErrors.name}
+              </Form.Control.Feedback>
+            </Form.Group>
+            <Form.Group controlId='amount' className='mb-3'>
+              <Form.Label><i className="fas fa-money-bill-wave me-1 text-danger"></i> Số Tiền</Form.Label>
+              <Form.Control
+                type='number'
+                placeholder='Nhập số tiền...'
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+                isInvalid={!!validationErrors.amount}
+                required
+                min="0"
+                step="0.01"
+              />
+              <Form.Control.Feedback type='invalid'>
+                {validationErrors.amount}
+              </Form.Control.Feedback>
+            </Form.Group>
+            <Form.Group controlId='feeType' className='mb-3'>
+              <Form.Label><i className="fas fa-tags me-1 text-info"></i> Loại Phí</Form.Label>
+              <Form.Select
+                value={feeType}
+                onChange={(e) => setFeeType(e.target.value)}
+              >
+                <option value='mandatory'>Bắt buộc</option>
+                <option value='service'>Dịch vụ</option>
+                <option value='maintenance'>Bảo trì</option>
+                <option value='water'>Nước</option>
+                <option value='electricity'>Điện</option>
+                <option value='parking'>Đỗ xe</option>
+                <option value='internet'>Internet</option>
+                <option value='security'>An ninh</option>
+                <option value='cleaning'>Vệ sinh</option>
+                <option value='contribution'>Đóng góp</option>
+                <option value='other'>Khác</option>
+              </Form.Select>
+            </Form.Group>
+            <Form.Group controlId='description' className='mb-3'>
+              <Form.Label><i className="fas fa-sticky-note me-1 text-secondary"></i> Mô Tả</Form.Label>
+              <Form.Control
+                as='textarea'
+                rows={3}
+                placeholder='Thêm mô tả cho phí (không bắt buộc)'
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
               />
             </Form.Group>
-          )}
-          
-          <Button type='submit' variant='primary' className='mt-3'>
-            {isEditMode ? 'Cập Nhật' : 'Tạo Mới'}
-          </Button>
-        </Form>
-      </FormContainer>
+            <Row>
+              <Col md={6}>
+                <Form.Group controlId='startDate' className='mb-3'>
+                  <Form.Label><i className="fas fa-calendar-plus me-1 text-success"></i> Ngày Bắt Đầu</Form.Label>
+                  <Form.Control
+                    type='date'
+                    value={startDate}
+                    onChange={(e) => setStartDate(e.target.value)}
+                  />
+                </Form.Group>
+              </Col>
+              <Col md={6}>
+                <Form.Group controlId='endDate' className='mb-3'>
+                  <Form.Label><i className="fas fa-calendar-times me-1 text-danger"></i> Ngày Kết Thúc</Form.Label>
+                  <Form.Control
+                    type='date'
+                    value={endDate}
+                    onChange={(e) => setEndDate(e.target.value)}
+                  />
+                </Form.Group>
+              </Col>
+            </Row>
+            {isEditMode && (
+              <Form.Group controlId='active' className='mb-3'>
+                <Form.Check
+                  type='checkbox'
+                  label={<span><i className="fas fa-toggle-on me-1 text-success"></i> Hoạt động</span>}
+                  checked={active}
+                  onChange={(e) => setActive(e.target.checked)}
+                />
+              </Form.Group>
+            )}
+            <Button type='submit' variant='warning' className='mt-3 w-100 shadow-sm' size="lg">
+              {isEditMode ? <><i className="fas fa-save me-2"></i> Cập Nhật</> : <><i className="fas fa-plus-circle me-2"></i> Tạo Mới</>}
+            </Button>
+          </Form>
+        </Card.Body>
+      </Card>
     </>
   );
 };

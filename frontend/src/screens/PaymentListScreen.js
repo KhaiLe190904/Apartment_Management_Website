@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { Table, Button, Row, Col, Form, InputGroup } from 'react-bootstrap';
+import { Table, Button, Row, Col, Form, InputGroup, Card } from 'react-bootstrap';
 import { LinkContainer } from 'react-router-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import Message from '../components/Message';
@@ -157,82 +157,66 @@ const PaymentListScreen = () => {
       ) : error ? (
         <Message variant="danger">{error}</Message>
       ) : (
-        <>
-          <Table striped bordered hover responsive className="table-sm">
-            <thead>
-              <tr>
-                <th>Loại Phí</th>
-                <th>Căn Hộ</th>
-                <th>Số Tiền</th>
-                <th>Phương thức</th>
-                <th>Trạng thái</th>
-                <th>Ngày thanh toán</th>
-                <th>Ghi chú</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredPayments.map((payment) => (
-                <tr key={payment._id}>
-                  <td>
-                    <Link to={`/payments/${payment._id}`}>
-                      {payment.fee ? payment.fee.name : 'N/A'}
-                    </Link>
-                  </td>
-                  <td>
-                    {payment.household
-                      ? payment.household.apartmentNumber
-                      : 'N/A'}
-                  </td>
-                  <td>
-                    {payment.amount?.toLocaleString('vi-VN', {
-                      style: 'currency',
-                      currency: 'VND',
-                    })}
-                  </td>
-                  <td>{payment.method}</td>
-                  <td>
-                    <Badge
-                      bg={
-                        payment.status === 'paid'
-                          ? 'success'
-                          : payment.status === 'overdue'
-                          ? 'danger'
-                          : 'warning'
-                      }
-                    >
-                      {payment.status === 'paid'
-                        ? 'Đã thanh toán'
-                        : payment.status === 'overdue'
-                        ? 'Quá hạn'
-                        : 'Chưa thanh toán'}
-                    </Badge>
-                  </td>
-                  <td>
-                    {payment.paymentDate
-                      ? new Date(payment.paymentDate).toLocaleDateString(
-                          'vi-VN'
-                        )
-                      : 'N/A'}
-                  </td>
-                  <td>{payment.note || 'N/A'}</td>
-                  <td>
-                    <Button
-                      variant="light"
-                      className="btn-sm"
-                      onClick={() => navigate(`/payments/${payment._id}`)}
-                    >
-                      <i className="fas fa-eye"></i>
-                    </Button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </Table>
-          {filteredPayments.length === 0 && (
-            <Message>Không tìm thấy khoản thanh toán nào</Message>
-          )}
-        </>
+        <Card className="shadow-lg border-0 rounded-4">
+          <Card.Header className="bg-white border-0 rounded-top-4 pb-2 d-flex align-items-center justify-content-between">
+            <span className="fw-bold fs-5 text-primary"><i className="bi bi-cash-coin me-2"></i>Danh sách thanh toán</span>
+            <span className="text-muted small">Tổng: {filteredPayments.length}</span>
+          </Card.Header>
+          <Card.Body className="p-0">
+            <div className="table-responsive">
+              <table className="table table-hover align-middle mb-0 household-table">
+                <thead className="table-light">
+                  <tr>
+                    <th className="fw-bold">Loại Phí</th>
+                    <th className="fw-bold">Căn Hộ</th>
+                    <th className="fw-bold">Số Tiền</th>
+                    <th className="fw-bold">Phương thức</th>
+                    <th className="fw-bold text-center">Trạng thái</th>
+                    <th className="fw-bold">Ngày thanh toán</th>
+                    <th className="fw-bold">Ghi chú</th>
+                    <th className="fw-bold text-center col-action" style={{width: '1%', whiteSpace: 'nowrap'}}>Thao Tác</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredPayments.map((payment) => (
+                    <tr key={payment._id} className="table-row-hover">
+                      <td>
+                        <Link to={`/payments/${payment._id}`}>{payment.fee ? payment.fee.name : 'N/A'}</Link>
+                      </td>
+                      <td>{payment.household ? payment.household.apartmentNumber : 'N/A'}</td>
+                      <td>{payment.amount?.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}</td>
+                      <td>{payment.method}</td>
+                      <td className="text-center align-middle">
+                        <span className={`badge px-3 py-2 rounded-pill bg-opacity-10 ${payment.status === 'paid' ? 'bg-success text-success' : payment.status === 'overdue' ? 'bg-danger text-danger' : 'bg-warning text-warning'}`}>
+                          <i className={`bi ${payment.status === 'paid' ? 'bi-check-circle' : payment.status === 'overdue' ? 'bi-x-circle' : 'bi-clock'} me-1`}></i>
+                          {payment.status === 'paid' ? 'Đã thanh toán' : payment.status === 'overdue' ? 'Quá hạn' : 'Chưa thanh toán'}
+                        </span>
+                      </td>
+                      <td>{payment.paymentDate ? new Date(payment.paymentDate).toLocaleDateString('vi-VN') : 'N/A'}</td>
+                      <td>{payment.note || 'N/A'}</td>
+                      <td className="text-center align-middle col-action" style={{width: '1%', whiteSpace: 'nowrap'}}>
+                        <div className="d-flex justify-content-center gap-1">
+                          <Button
+                            variant="light"
+                            className="mx-1 small"
+                            onClick={() => navigate(`/payments/${payment._id}`)}
+                            title="Xem chi tiết"
+                            style={{fontSize: '0.85rem', borderRadius: '1rem'}}
+                          >
+                            Xem
+                          </Button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            {filteredPayments.length === 0 && (
+              <Message>Không tìm thấy khoản thanh toán nào</Message>
+            )}
+          </Card.Body>
+        </Card>
       )}
     </>
   );
