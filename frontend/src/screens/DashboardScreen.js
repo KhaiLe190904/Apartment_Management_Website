@@ -315,12 +315,32 @@ const DashboardScreen = () => {
   };
   
   return (
-    <div className="dashboard-bg py-4 px-2 px-md-4">
-      <div className="d-flex align-items-center gap-3 mb-4 flex-wrap">
-        <i className="bi bi-speedometer2 text-primary" style={{ fontSize: 36 }}></i>
-        <h1 className="mb-0 fw-bold" style={{ letterSpacing: 1 }}>Bảng Điều Khiển Quản Lý</h1>
-        <div className="ms-auto fw-semibold text-secondary" style={{ minWidth: 120, fontSize: 18 }}>
-          {stats.financials.displayMonthName || (new Date().toLocaleDateString('vi-VN', { month: '2-digit', year: 'numeric' }))}
+    <div style={{ 
+      background: 'linear-gradient(135deg,rgb(226, 190, 231) 0%, #f5576c 100%)', 
+      minHeight: '100vh',
+      padding: '20px'
+    }}>
+      {/* Header với thiết kế hiện đại */}
+      <div className="text-center mb-5 position-relative">
+        <div style={{
+          background: 'rgba(255,255,255,0.15)',
+          backdropFilter: 'blur(15px)',
+          borderRadius: '25px',
+          padding: '25px',
+          border: '1px solid rgba(255,255,255,0.25)',
+          boxShadow: '0 8px 32px rgba(255,255,255,0.1)'
+        }}>
+          <h1 className="text-white mb-2 fw-bold" style={{ 
+            fontSize: '2.2rem',
+            textShadow: '2px 2px 8px rgba(0,0,0,0.2)',
+            letterSpacing: '1px'
+          }}>
+            <i className="bi bi-speedometer2 me-3" style={{ fontSize: '2rem' }}></i>
+            DASHBOARD QUẢN LÝ
+          </h1>
+          <p className="text-white mb-0" style={{ fontSize: '16px', opacity: '0.9' }}>
+            {stats.financials.displayMonthName || (new Date().toLocaleDateString('vi-VN', { month: 'long', year: 'numeric' }))}
+          </p>
         </div>
       </div>
       
@@ -330,91 +350,289 @@ const DashboardScreen = () => {
         <Loader />
       ) : (
         <>
-          {/* Card thống kê: Row/Col, tối giản, màu trắng/xám nhạt */}
-          <div className="row g-3 mb-4 justify-content-center">
-            <div className="col-6 col-md-3">
-              <div className="bg-white border rounded-4 shadow-sm p-3 text-center">
-                <div className="text-secondary small mb-1">HỘ GIA ĐÌNH</div>
-                <div className="fw-bold fs-3 text-primary mb-1">{stats.counts.households}</div>
-                <Link to="/households" className="small text-decoration-none">Xem chi tiết</Link>
-              </div>
-            </div>
-            <div className="col-6 col-md-3">
-              <div className="bg-white border rounded-4 shadow-sm p-3 text-center">
-                <div className="text-secondary small mb-1">CƯ DÂN</div>
-                <div className="fw-bold fs-3 text-success mb-1">{stats.counts.residents}</div>
-                <Link to="/residents" className="small text-decoration-none">Xem chi tiết</Link>
-              </div>
-            </div>
-            <div className="col-6 col-md-3">
-              <div className="bg-white border rounded-4 shadow-sm p-3 text-center">
-                <div className="text-secondary small mb-1">LOẠI PHÍ</div>
-                <div className="fw-bold fs-3 text-warning mb-1">{stats.counts.fees}</div>
-                <Link to="/fees" className="small text-decoration-none">Xem chi tiết</Link>
-              </div>
-            </div>
-            <div className="col-6 col-md-3">
-              <div className="bg-white border rounded-4 shadow-sm p-3 text-center">
-                <div className="text-secondary small mb-1">DOANH THU</div>
-                <div className="fw-bold fs-3 text-info mb-1">{stats.financials.monthlyRevenue.toLocaleString()}</div>
-                <Link to="/payments" className="small text-decoration-none">Xem chi tiết</Link>
-              </div>
-            </div>
-          </div>
-          {/* Grid biểu đồ: 2 hàng, mỗi hàng 2 biểu đồ, card trắng, bo góc lớn, shadow nhẹ */}
-          <div className="row g-3 mb-4">
-            <div className="col-12 col-md-6">
-              <div className="bg-white border rounded-4 shadow-sm p-3 h-100">
-                <div className="fw-bold mb-2" style={{ fontSize: 16 }}>Tỷ Lệ Doanh Thu (Doughnut)</div>
-                <div style={{ height: 240 }}>
-                  <Doughnut data={revenueByTypeData} options={pieChartOptions} />
+          {/* Cards thống kê với thiết kế mới */}
+          <div className="row g-4 mb-5">
+            {/* Card lớn cho doanh thu */}
+            <div className="col-12 col-lg-6">
+              <div style={{
+                background: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
+                borderRadius: '20px',
+                padding: '25px',
+                color: 'white',
+                height: '180px',
+                position: 'relative',
+                overflow: 'hidden',
+                boxShadow: '0 8px 25px rgba(79, 172, 254, 0.4)',
+                transition: 'all 0.3s ease',
+                cursor: 'pointer'
+              }} className="h-100 d-flex flex-column justify-content-between"
+              onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-5px)'}
+              onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0px)'}>
+                <div className="d-flex justify-content-between align-items-start">
+                  <div>
+                    <div className="mb-2" style={{ fontSize: '14px', fontWeight: '600', opacity: '0.9' }}>
+                      TỔNG DOANH THU
+                    </div>
+                    <div className="fw-bold" style={{ fontSize: '2.2rem', lineHeight: '1.1' }}>
+                      {stats.financials.monthlyRevenue.toLocaleString()}
+                    </div>
+                    <div style={{ fontSize: '12px', opacity: '0.8', marginTop: '4px' }}>
+                      VND
+                    </div>
+                  </div>
+                  <div style={{ fontSize: '2.5rem', opacity: '0.4' }}>
+                    <i className="bi bi-graph-up-arrow"></i>
+                  </div>
+                </div>
+                <div className="d-flex justify-content-end">
+                  <Link to="/payments" className="text-white text-decoration-none" style={{ 
+                    fontSize: '13px',
+                    background: 'rgba(255,255,255,0.2)',
+                    padding: '6px 12px',
+                    borderRadius: '15px',
+                    transition: 'all 0.2s ease'
+                  }}>
+                    <i className="bi bi-arrow-right me-1"></i>Chi tiết
+                  </Link>
                 </div>
               </div>
             </div>
-            <div className="col-12 col-md-6">
-              <div className="bg-white border rounded-4 shadow-sm p-3 h-100">
-                <div className="fw-bold mb-2" style={{ fontSize: 16 }}>Thống Kê Số Lượng (Bar Ngang)</div>
-                <div style={{ height: 240 }}>
-                  <Bar data={countsComparisonData} options={horizontalBarOptions} />
+
+            {/* 3 cards nhỏ */}
+            <div className="col-12 col-lg-6">
+              <div className="row g-3 h-100">
+                <div className="col-6">
+                  <div style={{
+                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                    borderRadius: '15px',
+                    padding: '16px',
+                    color: 'white',
+                    height: '85px',
+                    position: 'relative',
+                    boxShadow: '0 6px 20px rgba(102, 126, 234, 0.3)',
+                    transition: 'all 0.3s ease',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'space-between'
+                  }} onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.03)'}
+                  onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}>
+                    <div>
+                      <div style={{ fontSize: '11px', fontWeight: '600', opacity: '0.9', marginBottom: '4px' }}>
+                        HỘ GIA ĐÌNH
+                      </div>
+                      <div className="fw-bold" style={{ fontSize: '1.8rem', lineHeight: '1' }}>
+                        {stats.counts.households}
+                      </div>
+                    </div>
+                    <div className="text-end">
+                      <Link to="/households" className="text-white text-decoration-none" style={{ 
+                        fontSize: '11px',
+                        opacity: '0.9'
+                      }}>
+                        Chi tiết →
+                      </Link>
+                    </div>
+                  </div>
+                </div>
+                <div className="col-6">
+                  <div style={{
+                    background: 'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)',
+                    borderRadius: '15px',
+                    padding: '16px',
+                    color: '#2d3748',
+                    height: '85px',
+                    position: 'relative',
+                    boxShadow: '0 6px 20px rgba(168, 237, 234, 0.3)',
+                    transition: 'all 0.3s ease',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'space-between'
+                  }} onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.03)'}
+                  onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}>
+                    <div>
+                      <div style={{ fontSize: '11px', fontWeight: '600', opacity: '0.8', marginBottom: '4px' }}>
+                        CƯ DÂN
+                      </div>
+                      <div className="fw-bold" style={{ fontSize: '1.8rem', lineHeight: '1' }}>
+                        {stats.counts.residents}
+                      </div>
+                    </div>
+                    <div className="text-end">
+                      <Link to="/residents" className="text-decoration-none" style={{ 
+                        fontSize: '11px',
+                        color: '#2d3748',
+                        opacity: '0.8'
+                      }}>
+                        Chi tiết →
+                      </Link>
+                    </div>
+                  </div>
+                </div>
+                <div className="col-12">
+                  <div style={{
+                    background: 'linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%)',
+                    borderRadius: '15px',
+                    padding: '16px',
+                    color: '#2d3748',
+                    height: '85px',
+                    position: 'relative',
+                    boxShadow: '0 6px 20px rgba(252, 182, 159, 0.3)',
+                    transition: 'all 0.3s ease',
+                    cursor: 'pointer'
+                  }} onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.02)'}
+                  onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}>
+                    <div className="d-flex justify-content-between align-items-center h-100">
+                      <div>
+                        <div style={{ fontSize: '11px', fontWeight: '600', opacity: '0.8', marginBottom: '4px' }}>
+                          LOẠI PHÍ QUẢN LÝ
+                        </div>
+                        <div className="fw-bold" style={{ fontSize: '1.8rem', lineHeight: '1' }}>
+                          {stats.counts.fees}
+                        </div>
+                      </div>
+                      <div>
+                        <Link to="/fees" className="text-decoration-none d-flex align-items-center justify-content-center" style={{ 
+                          color: '#2d3748',
+                          width: '35px',
+                          height: '35px',
+                          background: 'rgba(255,255,255,0.5)',
+                          borderRadius: '50%',
+                          transition: 'all 0.2s ease'
+                        }}>
+                          <i className="bi bi-arrow-right" style={{ fontSize: '16px' }}></i>
+                        </Link>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-          <div className="row g-3 mb-4">
-            <div className="col-12 col-md-6">
-              <div className="bg-white border rounded-4 shadow-sm p-3 h-100">
-                <div className="fw-bold mb-2" style={{ fontSize: 16 }}>Biểu Đồ Doanh Thu (Area)</div>
-                <div style={{ height: 240 }}>
+
+          {/* Biểu đồ với layout mới */}
+          <div className="row g-4 mb-4">
+            {/* Biểu đồ doanh thu lớn */}
+            <div className="col-12 col-xl-8">
+              <div style={{
+                background: 'rgba(255,255,255,0.95)',
+                backdropFilter: 'blur(10px)',
+                borderRadius: '20px',
+                padding: '25px',
+                border: '1px solid rgba(255,255,255,0.2)',
+                boxShadow: '0 10px 40px rgba(0,0,0,0.1)',
+                height: '400px'
+              }}>
+                <h5 className="fw-bold mb-3 text-primary">
+                  <i className="bi bi-graph-up me-2"></i>
+                  Xu Hướng Doanh Thu 6 Tháng
+                </h5>
+                <div style={{ height: '320px' }}>
                   <Line data={areaChartData} options={areaChartOptions} />
                 </div>
               </div>
             </div>
-            <div className="col-12 col-md-6">
-              <div className="bg-white border rounded-4 shadow-sm p-3 h-100">
-                <div className="fw-bold mb-2" style={{ fontSize: 16 }}>Phí Đã Thanh Toán Gần Đây</div>
+
+            {/* Biểu đồ tròn */}
+            <div className="col-12 col-xl-4">
+              <div style={{
+                background: 'rgba(255,255,255,0.95)',
+                backdropFilter: 'blur(10px)',
+                borderRadius: '20px',
+                padding: '25px',
+                border: '1px solid rgba(255,255,255,0.2)',
+                boxShadow: '0 10px 40px rgba(0,0,0,0.1)',
+                height: '400px'
+              }}>
+                <h5 className="fw-bold mb-3 text-success">
+                  <i className="bi bi-pie-chart me-2"></i>
+                  Tỷ Lệ Doanh Thu
+                </h5>
+                <div style={{ height: '320px' }}>
+                  <Doughnut data={revenueByTypeData} options={pieChartOptions} />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Hàng cuối */}
+          <div className="row g-4">
+            {/* Biểu đồ cột */}
+            <div className="col-12 col-lg-5">
+              <div style={{
+                background: 'rgba(255,255,255,0.95)',
+                backdropFilter: 'blur(10px)',
+                borderRadius: '20px',
+                padding: '25px',
+                border: '1px solid rgba(255,255,255,0.2)',
+                boxShadow: '0 10px 40px rgba(0,0,0,0.1)',
+                height: '350px'
+              }}>
+                <h5 className="fw-bold mb-3 text-warning">
+                  <i className="bi bi-bar-chart me-2"></i>
+                  Thống Kê Đối Tượng
+                </h5>
+                <div style={{ height: '270px' }}>
+                  <Bar data={countsComparisonData} options={horizontalBarOptions} />
+                </div>
+              </div>
+            </div>
+
+            {/* Bảng thanh toán */}
+            <div className="col-12 col-lg-7">
+              <div style={{
+                background: 'rgba(255,255,255,0.95)',
+                backdropFilter: 'blur(10px)',
+                borderRadius: '20px',
+                padding: '25px',
+                border: '1px solid rgba(255,255,255,0.2)',
+                boxShadow: '0 10px 40px rgba(0,0,0,0.1)',
+                height: '350px'
+              }}>
+                <h5 className="fw-bold mb-3 text-info">
+                  <i className="bi bi-credit-card me-2"></i>
+                  Thanh Toán Gần Đây
+                </h5>
                 {stats.recentPayments.length === 0 ? (
-                  <p className="text-center">Không tìm thấy thanh toán gần đây</p>
+                  <div className="d-flex align-items-center justify-content-center h-75 text-muted">
+                    <div className="text-center">
+                      <i className="bi bi-inbox display-1 opacity-50"></i>
+                      <p className="mt-3">Không có thanh toán gần đây</p>
+                    </div>
+                  </div>
                 ) : (
-                  <div className="table-responsive">
-                    <table className="table table-hover align-middle table-borderless dashboard-table">
-                      <thead className="table-light">
+                  <div className="table-responsive" style={{ height: '270px', overflowY: 'auto' }}>
+                    <table className="table table-hover align-middle">
+                      <thead className="table-light sticky-top">
                         <tr>
-                          <th className="fw-bold">Hộ Gia Đình</th>
-                          <th className="fw-bold">Phí</th>
-                          <th className="fw-bold">Số Tiền</th>
-                          <th className="fw-bold">Ngày</th>
+                          <th className="fw-bold border-0">Căn Hộ</th>
+                          <th className="fw-bold border-0">Loại Phí</th>
+                          <th className="fw-bold border-0">Số Tiền</th>
+                          <th className="fw-bold border-0">Ngày</th>
                         </tr>
                       </thead>
                       <tbody>
-                        {stats.recentPayments.map((payment) => (
-                          <tr key={payment._id} className="table-row-hover">
-                            <td className="text-primary fw-semibold">
-                              <i className="bi bi-house-door me-2"></i>
+                        {stats.recentPayments.map((payment, index) => (
+                          <tr key={payment._id} style={{
+                            transition: 'all 0.2s ease',
+                            borderRadius: '10px'
+                          }}>
+                            <td className="text-primary fw-semibold border-0">
+                              <i className="bi bi-building me-2"></i>
                               {payment.household?.apartmentNumber || 'N/A'}
                             </td>
-                            <td className="fw-semibold">{payment.fee?.name || 'N/A'}</td>
-                            <td className="text-success fw-bold">{payment.amount.toLocaleString()} VND</td>
-                            <td className="text-muted">{new Date(payment.paymentDate).toLocaleDateString('vi-VN')}</td>
+                            <td className="fw-medium border-0">
+                              <span className="badge bg-secondary bg-opacity-25 text-dark">
+                                {payment.fee?.name || 'N/A'}
+                              </span>
+                            </td>
+                            <td className="text-success fw-bold border-0">
+                              {payment.amount.toLocaleString()} VND
+                            </td>
+                            <td className="text-muted border-0">
+                              {new Date(payment.paymentDate).toLocaleDateString('vi-VN')}
+                            </td>
                           </tr>
                         ))}
                       </tbody>

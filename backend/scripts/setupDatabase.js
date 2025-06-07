@@ -5,6 +5,7 @@ const Resident = require('../models/residentModel');
 const Payment = require('../models/paymentModel');
 const Fee = require('../models/feeModel');
 const User = require('../models/userModel');
+const Vehicle = require('../models/vehicleModel');
 
 dotenv.config();
 
@@ -223,10 +224,14 @@ async function createMassiveTestData() {
       for (let unit = 1; unit <= 5; unit++) {
         const apartmentNumber = `${String.fromCharCode(64 + floor)}${unit.toString().padStart(2, '0')}`;
         
+        const creationDate = new Date();
+        creationDate.setFullYear(creationDate.getFullYear() - 1);
+        
         householdsToCreate.push({
           apartmentNumber: apartmentNumber,
           address: `Căn hộ ${apartmentNumber}, Chung cư BlueMoon, Quận ${Math.floor(Math.random() * 12) + 1}, TP.HCM`,
-          note: `Hộ gia đình ${apartmentNumber} - Ngày tạo: ${new Date().toLocaleDateString('vi-VN')}`,
+          note: `Hộ gia đình ${apartmentNumber} - Ngày tạo: ${creationDate.toLocaleDateString('vi-VN')}`,
+          creationDate: creationDate,
           active: true
         });
       }
@@ -637,18 +642,169 @@ async function createMassiveTestData() {
 
     console.log(`✅ Đã tạo ${totalPayments.length} thanh toán thành công`);
 
+    // Tạo xe cho các hộ gia đình
+    console.log('🚗 Tạo dữ liệu xe...');
+    const vehiclesToCreate = [];
+    
+    // Xóa xe cũ
+    await Vehicle.deleteMany({});
+
+    // Dữ liệu mẫu cho xe
+    const vehicleTypes = ['Xe máy', 'Ô tô', 'Xe đạp', 'Xe điện'];
+    const carBrands = ['Toyota', 'Honda', 'Hyundai', 'Mazda', 'Mitsubishi', 'Suzuki', 'Ford', 'Chevrolet'];
+    const motorbikeBrands = ['Honda', 'Yamaha', 'Suzuki', 'SYM', 'Piaggio', 'Kawasaki'];
+    const electricBrands = ['VinFast', 'Pega', 'Anbico', 'Gogoro', 'YADEA'];
+    const bicycleBrands = ['Giant', 'Trek', 'Asama', 'Fornix', 'TrinX'];
+    
+    const carModels = ['Vios', 'City', 'Accent', 'CX-5', 'Xpander', 'Swift', 'EcoSport', 'Spark'];
+    const motorbikeModels = ['Wave', 'Vision', 'Lead', 'Vario', 'Vespa', 'SH', 'Exciter', 'Winner'];
+    const electricModels = ['Klara', 'Ludo', 'Cap-A', 'S2', 'C70s'];
+    const bicycleModels = ['Escape', 'FX', 'AM2606', 'Sport', 'TX24'];
+    
+    const colors = ['Trắng', 'Đen', 'Xám', 'Đỏ', 'Xanh', 'Bạc', 'Vàng', 'Nâu'];
+    const parkingSlots = ['A1-01', 'A1-02', 'A1-03', 'B1-01', 'B1-02', 'B2-01', 'B2-02', 'Tầng 1-01', 'Tầng 1-02', 'Tầng 2-01'];
+
+    // 70% hộ gia đình có ít nhất 1 xe
+    const householdsWithVehicles = allHouseholds
+      .sort(() => 0.5 - Math.random())
+      .slice(0, Math.floor(allHouseholds.length * 0.7));
+
+    for (const household of householdsWithVehicles) {
+      // Lấy cư dân của hộ gia đình
+      const householdResidents = allResidents.filter(r => r.household.toString() === household._id.toString());
+      
+      if (householdResidents.length === 0) continue;
+
+      // Mỗi hộ có 1-3 xe
+      const numVehicles = Math.floor(Math.random() * 3) + 1;
+      
+      for (let i = 0; i < numVehicles; i++) {
+        const vehicleType = vehicleTypes[Math.floor(Math.random() * vehicleTypes.length)];
+        
+        // Chọn brand và model theo loại xe
+        let brands, models;
+        switch (vehicleType) {
+          case 'Ô tô':
+            brands = carBrands;
+            models = carModels;
+            break;
+          case 'Xe máy':
+            brands = motorbikeBrands;
+            models = motorbikeModels;
+            break;
+          case 'Xe điện':
+            brands = electricBrands;
+            models = electricModels;
+            break;
+          case 'Xe đạp':
+            brands = bicycleBrands;
+            models = bicycleModels;
+            break;
+          default:
+            brands = motorbikeBrands;
+            models = motorbikeModels;
+        }
+
+        const brand = brands[Math.floor(Math.random() * brands.length)];
+        const model = models[Math.floor(Math.random() * models.length)];
+        const color = colors[Math.floor(Math.random() * colors.length)];
+        
+        // Tạo biển số xe
+        let licensePlate;
+        if (vehicleType === 'Ô tô') {
+          // Biển số xe ô tô: 30A-12345
+          const numbers = String(Math.floor(Math.random() * 90000) + 10000);
+          const letters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
+          const letter = letters[Math.floor(Math.random() * letters.length)];
+          licensePlate = `30${letter}-${numbers}`;
+        } else if (vehicleType === 'Xe máy' || vehicleType === 'Xe điện') {
+          // Biển số xe máy: 30K1-12345
+          const numbers = String(Math.floor(Math.random() * 90000) + 10000);
+          const letters = ['K1', 'K2', 'K3', 'K4', 'L1', 'L2', 'M1', 'M2'];
+          const letter = letters[Math.floor(Math.random() * letters.length)];
+          licensePlate = `30${letter}-${numbers}`;
+        } else {
+          // Xe đạp không có biển số
+          licensePlate = `XD${String(Math.floor(Math.random() * 9000) + 1000)}`;
+        }
+
+        // Chọn chủ sở hữu ngẫu nhiên từ cư dân của hộ
+        const owner = householdResidents[Math.floor(Math.random() * householdResidents.length)];
+        
+        // Năm sản xuất
+        const year = 2015 + Math.floor(Math.random() * 9); // 2015-2023
+        
+        // Trạng thái
+        const statuses = ['Đang sử dụng', 'Tạm ngưng', 'Đã bán'];
+        const statusWeights = [0.85, 0.1, 0.05]; // 85% đang sử dụng, 10% tạm ngưng, 5% đã bán
+        
+        let status = 'Đang sử dụng';
+        const random = Math.random();
+        if (random < statusWeights[2]) {
+          status = 'Đã bán';
+        } else if (random < statusWeights[1] + statusWeights[2]) {
+          status = 'Tạm ngưng';
+        }
+
+        // Parking slot (chỉ cho xe đang sử dụng)
+        const parkingSlot = status === 'Đang sử dụng' && Math.random() < 0.7 
+          ? parkingSlots[Math.floor(Math.random() * parkingSlots.length)]
+          : '';
+
+        // Ngày đăng ký (1 năm trước)
+        const registrationDate = new Date();
+        registrationDate.setFullYear(registrationDate.getFullYear() - 1);
+        registrationDate.setMonth(Math.floor(Math.random() * 12));
+        registrationDate.setDate(Math.floor(Math.random() * 28) + 1);
+
+        vehiclesToCreate.push({
+          licensePlate: licensePlate,
+          vehicleType: vehicleType,
+          brand: brand,
+          model: model,
+          color: color,
+          year: year,
+          household: household._id,
+          owner: owner._id,
+          registrationDate: registrationDate,
+          parkingSlot: parkingSlot,
+          status: status,
+          note: `${vehicleType} ${brand} ${model} - Đăng ký ${registrationDate.toLocaleDateString('vi-VN')}`,
+          active: true
+        });
+      }
+    }
+
+    // Lưu xe vào database
+    const vehicles = await Vehicle.insertMany(vehiclesToCreate);
+    console.log(`✅ Đã tạo ${vehicles.length} xe mới`);
+
     // Thống kê cuối cùng
     console.log('\n📊 THỐNG KÊ TỔNG KẾT:');
     
     const finalHouseholdCount = await Household.countDocuments({ active: true });
     const finalResidentCount = await Resident.countDocuments({ active: true });
+    const finalVehicleCount = await Vehicle.countDocuments({ active: true });
     const finalPaymentCount = await Payment.countDocuments({ status: 'paid' });
     const finalFeeCount = await Fee.countDocuments({ active: true });
     
     console.log(`🏠 Tổng số hộ gia đình: ${finalHouseholdCount}`);
     console.log(`👥 Tổng số cư dân: ${finalResidentCount}`);
+    console.log(`🚗 Tổng số xe: ${finalVehicleCount}`);
     console.log(`💰 Tổng số thanh toán: ${finalPaymentCount}`);
     console.log(`📋 Tổng số loại phí: ${finalFeeCount}`);
+
+    // Thống kê xe theo loại
+    const vehiclesByType = await Vehicle.aggregate([
+      { $match: { active: true } },
+      { $group: { _id: '$vehicleType', count: { $sum: 1 } } },
+      { $sort: { count: -1 } }
+    ]);
+
+    console.log('\n--- Thống kê xe theo loại ---');
+    for (const type of vehiclesByType) {
+      console.log(`${type._id}: ${type.count} xe`);
+    }
 
     // Thống kê doanh thu tháng hiện tại
     const currentMonthStart = new Date();

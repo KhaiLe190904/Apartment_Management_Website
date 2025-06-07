@@ -45,7 +45,8 @@ const createPayment = asyncHandler(async (req, res) => {
     payerPhone,
     receiptNumber,
     note,
-    period
+    period,
+    status
   } = req.body;
   
   // Check if fee exists
@@ -97,7 +98,8 @@ const createPayment = asyncHandler(async (req, res) => {
     receiptNumber,
     collector: req.user._id, // User who created the payment
     note,
-    period: paymentPeriod
+    period: paymentPeriod,
+    status: 'paid'
   });
   
   // Populate the new payment with fee and household details

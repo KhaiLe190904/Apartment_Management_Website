@@ -6,7 +6,15 @@ const Household = require('../models/householdModel');
 // @access  Private
 exports.getResidents = async (req, res) => {
   try {
-    const residents = await Resident.find()
+    const { household } = req.query;
+    
+    // Build filter query
+    const filter = {};
+    if (household) {
+      filter.household = household;
+    }
+    
+    const residents = await Resident.find(filter)
       .populate('household', 'apartmentNumber');
     
     res.json(residents);

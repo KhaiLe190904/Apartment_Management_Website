@@ -43,10 +43,38 @@ const Header = () => {
         <Container fluid>
           <LinkContainer to={userInfo ? '/dashboard' : '/'}>
             <Navbar.Brand className="d-flex align-items-center gap-2 fw-bold fs-4 text-dark">
-              <span className="d-inline-flex align-items-center justify-content-center bg-white bg-opacity-75 rounded-circle shadow-sm" style={{width: 44, height: 44}}>
-                <i className="bi bi-building text-primary" style={{fontSize: 28}}></i>
-              </span>
-              <span className="ms-2" style={{letterSpacing: 1}}>Chung Cư BlueMoon</span>
+              <div className="d-inline-flex align-items-center justify-content-center bg-white bg-opacity-90 rounded-circle shadow-sm" style={{width: 48, height: 48, padding: '2px'}}>
+                <img 
+                  src="/logo.png" 
+                  alt="BlueMoon Logo" 
+                  style={{
+                    width: '40px', 
+                    height: '40px', 
+                    borderRadius: '50%',
+                    objectFit: 'cover'
+                  }}
+                  onError={(e) => {
+                    // Fallback to icon if logo not found
+                    e.target.style.display = 'none';
+                    e.target.nextElementSibling.style.display = 'inline-flex';
+                  }}
+                />
+                <i 
+                  className="bi bi-building text-primary" 
+                  style={{
+                    fontSize: 28, 
+                    display: 'none'
+                  }}
+                ></i>
+              </div>
+              <div className="d-flex flex-column">
+                <span className="ms-2" style={{letterSpacing: 1, fontSize: '1.3rem', lineHeight: '1.2'}}>
+                  Chung Cư BlueMoon
+                </span>
+                <span className="ms-2 text-muted" style={{fontSize: '0.75rem', fontWeight: 'normal'}}>
+                  Apartment Management System
+                </span>
+              </div>
             </Navbar.Brand>
           </LinkContainer>
           
@@ -70,6 +98,12 @@ const Header = () => {
                   <LinkContainer to="/residents">
                     <Nav.Link className="nav-link-custom">
                       <i className="bi bi-people me-1"></i> Cư dân
+                    </Nav.Link>
+                  </LinkContainer>
+                  
+                  <LinkContainer to="/vehicles">
+                    <Nav.Link className="nav-link-custom">
+                      <i className="bi bi-car-front me-1"></i> Phương tiện
                     </Nav.Link>
                   </LinkContainer>
                   

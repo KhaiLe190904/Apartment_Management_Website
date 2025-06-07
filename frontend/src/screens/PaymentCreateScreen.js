@@ -192,20 +192,46 @@ const PaymentCreateScreen = () => {
         payerPhone,
         receiptNumber,
         note,
-        period: periodDate
+        period: periodDate,
+        method: 'cash', // Default payment method
+        status: 'paid' // Ensure status is always 'paid' after successful payment
       };
       
-      await axios.post('/api/payments', paymentData, config);
+      console.log('Tạo thanh toán với dữ liệu:', paymentData);
       
-      setSuccess(true);
-      setTimeout(() => {
-        navigate('/payments');
-      }, 1500);
+      const response = await axios.post('/api/payments', paymentData, config);
+      
+      // Verify that the payment was created with 'paid' status
+      if (response.data && response.data.status === 'paid') {
+        console.log('✅ Thanh toán đã được tạo thành công với status: paid');
+        setSuccess(true);
+        
+        // Reset form for next payment if needed
+        if (!isDebtPayment) {
+          setAmount('');
+          setPayerName('');
+          setPayerId('');
+          setPayerPhone('');
+          setNote('');
+        }
+        
+        setTimeout(() => {
+          navigate('/payments', { 
+            state: { 
+              message: 'Thanh toán đã được tạo thành công và đã được đánh dấu là đã thanh toán!' 
+            }
+          });
+        }, 1500);
+      } else {
+        throw new Error('Payment status not confirmed as paid');
+      }
+      
     } catch (error) {
+      console.error('❌ Lỗi tạo thanh toán:', error);
       setError(
         error.response && error.response.data.message
           ? error.response.data.message
-          : 'Không thể tạo thanh toán'
+          : 'Không thể tạo thanh toán. Vui lòng thử lại.'
       );
     } finally {
       setLoading(false);
@@ -240,7 +266,12 @@ const PaymentCreateScreen = () => {
         </Card.Header>
         <Card.Body>
           {error && <Message variant='danger'>{error}</Message>}
-          {success && <Message variant='success'>Thanh toán đã được tạo thành công</Message>}
+          {success && (
+            <Message variant='success'>
+              <i className="fas fa-check-circle me-2"></i>
+              Thanh toán đã được tạo thành công và đã được đánh dấu là <strong>ĐÃ THANH TOÁN</strong>!
+            </Message>
+          )}
           {loading && <Loader />}
           <Form onSubmit={submitHandler} className="p-2">
             <Form.Group controlId='household' className='mb-3'>
@@ -381,8 +412,26 @@ const PaymentCreateScreen = () => {
                 onChange={(e) => setNote(e.target.value)}
               />
             </Form.Group>
-            <Button type='submit' variant='success' className='mt-3 w-100 shadow-sm' size="lg">
-              <i className="fas fa-plus-circle me-2"></i> Tạo Thanh Toán
+            
+            {/* Payment Status Info */}
+            <div className="alert alert-info d-flex align-items-center" role="alert">
+              <i className="fas fa-info-circle me-2"></i>
+              <div>
+                <strong>Trạng thái thanh toán:</strong> Sau khi tạo, thanh toán sẽ được tự động đánh dấu là <span className="badge bg-success">ĐÃ THANH TOÁN</span>
+              </div>
+            </div>
+            
+            <Button type='submit' variant='success' className='mt-3 w-100 shadow-sm' size="lg" disabled={loading}>
+              {loading ? (
+                <>
+                  <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                  Đang xử lý...
+                </>
+              ) : (
+                <>
+                  <i className="fas fa-plus-circle me-2"></i> Tạo Thanh Toán
+                </>
+              )}
             </Button>
           </Form>
         </Card.Body>

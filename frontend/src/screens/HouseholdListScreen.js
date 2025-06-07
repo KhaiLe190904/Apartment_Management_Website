@@ -82,123 +82,334 @@ const HouseholdListScreen = () => {
   );
   
   return (
-    <>
-      <Row className="align-items-center mb-3">
-        <Col>
-          <h1>Hộ Gia Đình</h1>
-        </Col>
-        <Col className="text-end">
-          <Button className="my-3" onClick={() => navigate('/households/create')}>
-            <i className="fas fa-plus"></i> Thêm Hộ Gia Đình
-          </Button>
-        </Col>
-      </Row>
-      
-      <Row className="mb-3">
-        <Col md={6}>
-          <InputGroup>
-            <Form.Control
-              type="text"
-              placeholder="Tìm kiếm theo số căn hộ hoặc địa chỉ"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-            {searchTerm && (
+    <div style={{ 
+      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', 
+      minHeight: '100vh',
+      padding: '20px'
+    }}>
+      {/* Hero Section */}
+      <div className="mb-5">
+        <div style={{
+          background: 'rgba(255,255,255,0.15)',
+          backdropFilter: 'blur(15px)',
+          borderRadius: '25px',
+          padding: '30px',
+          border: '1px solid rgba(255,255,255,0.25)',
+          boxShadow: '0 8px 32px rgba(255,255,255,0.1)',
+          position: 'relative',
+          overflow: 'hidden'
+        }}>
+          {/* Background Pattern */}
+          <div style={{
+            position: 'absolute',
+            top: 0,
+            right: 0,
+            width: '150px',
+            height: '150px',
+            background: 'linear-gradient(45deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05))',
+            borderRadius: '50%',
+            transform: 'translate(30%, -30%)'
+          }}></div>
+          
+          <Row className="align-items-center">
+            <Col lg={8}>
+              <div className="d-flex align-items-center mb-3">
+                <div style={{
+                  background: 'linear-gradient(135deg,rgb(11, 11, 11) 0%, #00f2fe 100%)',
+                  borderRadius: '20px',
+                  padding: '20px',
+                  marginRight: '20px',
+                  boxShadow: '0 10px 30px rgba(79, 172, 254, 0.3)'
+                }}>
+                  <i className="bi bi-buildings" style={{ fontSize: '2.5rem', color: 'white' }}></i>
+                </div>
+                <div>
+                  <h1 className="mb-2 fw-bold text-white" style={{ fontSize: '2.5rem', textShadow: '2px 2px 8px rgba(0,0,0,0.3)' }}>
+                    Quản Lý Hộ Gia Đình
+                  </h1>
+                  <p className="mb-0 text-white" style={{ fontSize: '16px', opacity: '0.9' }}>
+                    <i className="bi bi-house-door me-2"></i>
+                    Tổng cộng {filteredHouseholds.length} hộ gia đình
+                  </p>
+                </div>
+              </div>
+            </Col>
+            
+            <Col lg={4} className="text-end">
               <Button 
-                variant="outline-secondary"
-                
-                onClick={() => setSearchTerm('')}
+                className="btn-lg rounded-pill px-4 py-3 shadow-sm"
+                onClick={() => navigate('/households/create')}
+                style={{
+                  background: 'linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%)',
+                  border: 'none',
+                  transition: 'all 0.3s ease'
+                }}
               >
-                <i className="fas fa-times"></i>
-                Xóa
+                <i className="bi bi-plus-circle me-2"></i> Thêm Hộ Gia Đình
               </Button>
-            )}
-          </InputGroup>
-        </Col>
-      </Row>
+            </Col>
+          </Row>
+        </div>
+      </div>
+
+      {/* Search Section */}
+      <div className="mb-4">
+        <div style={{
+          background: 'rgba(255,255,255,0.95)',
+          backdropFilter: 'blur(15px)',
+          borderRadius: '20px',
+          padding: '25px',
+          border: '1px solid rgba(255,255,255,0.2)',
+          boxShadow: '0 10px 40px rgba(0,0,0,0.1)'
+        }}>
+          <Row className="align-items-center">
+            <Col md={8}>
+              <div className="position-relative">
+                <Form.Control
+                  type="text"
+                  placeholder="🔍 Tìm kiếm theo số căn hộ hoặc địa chỉ..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  style={{
+                    borderRadius: '15px',
+                    border: '2px solid rgba(102, 126, 234, 0.2)',
+                    padding: '12px 20px',
+                    fontSize: '16px',
+                    boxShadow: 'none',
+                    transition: 'all 0.3s ease'
+                  }}
+                  onFocus={(e) => e.target.style.borderColor = '#667eea'}
+                  onBlur={(e) => e.target.style.borderColor = 'rgba(102, 126, 234, 0.2)'}
+                />
+                {searchTerm && (
+                  <Button 
+                    variant="light"
+                    className="position-absolute end-0 top-50 translate-middle-y me-2 rounded-circle"
+                    style={{ 
+                      width: '35px', 
+                      height: '35px',
+                      border: 'none',
+                      boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+                    }}
+                    onClick={() => setSearchTerm('')}
+                  >
+                    <i className="bi bi-x"></i>
+                  </Button>
+                )}
+              </div>
+            </Col>
+            <Col md={4} className="text-md-end mt-3 mt-md-0">
+              <div className="d-flex align-items-center justify-content-md-end">
+                <span className="text-muted me-3">
+                  <i className="bi bi-funnel me-1"></i>
+                  Kết quả: <strong>{filteredHouseholds.length}</strong>
+                </span>
+              </div>
+            </Col>
+          </Row>
+        </div>
+      </div>
       
+      {/* Main Content */}
       {loading ? (
-        <Loader />
+        <div className="text-center py-5">
+          <Loader />
+        </div>
       ) : error ? (
         <Message variant="danger">{error}</Message>
       ) : (
-        <Card className="shadow-lg border-0 rounded-4">
-          <Card.Header className="bg-white border-0 rounded-top-4 pb-2 d-flex align-items-center justify-content-between">
-            <span className="fw-bold fs-5 text-primary"><i className="bi bi-building me-2"></i>Danh sách hộ gia đình</span>
-            <span className="text-muted small">Tổng: {filteredHouseholds.length}</span>
-          </Card.Header>
-          <Card.Body className="p-0">
-            <div className="table-responsive">
-              <table className="table table-hover align-middle mb-0 household-table">
-                <thead className="table-light">
-                  <tr>
-                    <th className="fw-bold text-center">Căn Hộ</th>
-                    <th className="fw-bold">Địa Chỉ</th>
-                    <th className="fw-bold">Chủ Hộ</th>
-                    <th className="fw-bold text-center">Trạng Thái</th>
-                    <th className="fw-bold text-center">Thao Tác</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredHouseholds.map((household) => (
-                    <tr key={household._id} className="table-row-hover">
-                      <td className="text-center align-middle">
-                        <span className="badge bg-primary bg-opacity-10 text-primary px-3 py-2 fs-6 rounded-pill">
-                          <i className="bi bi-house-door me-2"></i>{household.apartmentNumber}
-                        </span>
-                      </td>
-                      <td className="align-middle">{household.address}</td>
-                      <td className="align-middle">
-                        {household.householdHead
-                          ? <span className="fw-semibold text-dark"><i className="bi bi-person-circle me-1"></i>{household.householdHead.fullName}</span>
-                          : <span className="text-muted fst-italic">Chưa Gán</span>}
-                      </td>
-                      <td className="text-center align-middle">
-                        {household.active ? (
-                          <span className="badge bg-success bg-opacity-10 text-success px-3 py-2 rounded-pill">
-                            <i className="bi bi-check-circle me-1"></i>Hoạt Động
-                          </span>
-                        ) : (
-                          <span className="badge bg-danger bg-opacity-10 text-danger px-3 py-2 rounded-pill">
-                            <i className="bi bi-x-circle me-1"></i>Không Hoạt Động
-                          </span>
-                        )}
-                      </td>
-                      <td className="text-center align-middle">
-                        <div className="d-flex justify-content-center gap-1">
-                          <LinkContainer to={`/households/${household._id}`}>
-                            <Button variant="light" className="btn-circle mx-1" title="Xem chi tiết">
-                              Xem
-                            </Button>
-                          </LinkContainer>
-                          <LinkContainer to={`/households/${household._id}/edit`}>
-                            <Button variant="light" className="btn-circle mx-1" title="Chỉnh sửa">
-                              Chỉnh sửa
-                            </Button>
-                          </LinkContainer>
-                          {userInfo.role === 'admin' && (
-                            <Button
-                              variant="danger"
-                              className="btn-circle mx-1"
-                              onClick={() => deleteHandler(household._id)}
-                              title="Xóa"
-                            >
-                              Xóa
-                            </Button>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+        <div style={{
+          background: 'rgba(255,255,255,0.95)',
+          backdropFilter: 'blur(15px)',
+          borderRadius: '20px',
+          padding: '0',
+          border: '1px solid rgba(255,255,255,0.2)',
+          boxShadow: '0 10px 40px rgba(0,0,0,0.1)',
+          overflow: 'hidden'
+        }}>
+          {/* Table Header */}
+          <div style={{
+            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+            padding: '20px 30px',
+            color: 'white'
+          }}>
+            <div className="d-flex justify-content-between align-items-center">
+              <h4 className="mb-0 fw-bold d-flex align-items-center">
+                <i className="bi bi-table me-3" style={{ fontSize: '1.5rem' }}></i>
+                Danh Sách Hộ Gia Đình
+              </h4>
+              <span className="badge bg-white text-dark px-3 py-2">
+                {filteredHouseholds.length} hộ
+              </span>
             </div>
-            {filteredHouseholds.length === 0 && (
-              <Message>Không tìm thấy hộ gia đình nào</Message>
+          </div>
+
+          {/* Table Content */}
+          <div className="p-0">
+            {filteredHouseholds.length === 0 ? (
+              <div className="text-center py-5">
+                <i className="bi bi-house-x display-1 text-muted opacity-50"></i>
+                <h5 className="mt-3 text-muted">Không tìm thấy hộ gia đình nào</h5>
+                <p className="text-muted">Thử điều chỉnh bộ lọc tìm kiếm của bạn</p>
+              </div>
+            ) : (
+              <div className="table-responsive">
+                <table className="table table-hover align-middle mb-0">
+                  <thead style={{ background: 'rgba(102, 126, 234, 0.1)' }}>
+                    <tr>
+                      <th className="fw-bold text-center py-3 border-0" style={{ color: '#2d3748' }}>
+                        <i className="bi bi-building me-2"></i>Căn Hộ
+                      </th>
+                      <th className="fw-bold py-3 border-0" style={{ color: '#2d3748' }}>
+                        <i className="bi bi-geo-alt me-2"></i>Địa Chỉ
+                      </th>
+                      <th className="fw-bold py-3 border-0" style={{ color: '#2d3748' }}>
+                        <i className="bi bi-person-badge me-2"></i>Chủ Hộ
+                      </th>
+                      <th className="fw-bold text-center py-3 border-0" style={{ color: '#2d3748' }}>
+                        <i className="bi bi-activity me-2"></i>Trạng Thái
+                      </th>
+                      <th className="fw-bold text-center py-3 border-0" style={{ color: '#2d3748' }}>
+                        <i className="bi bi-gear me-2"></i>Thao Tác
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredHouseholds.map((household, index) => (
+                      <tr 
+                        key={household._id} 
+                        style={{
+                          transition: 'all 0.3s ease',
+                          borderBottom: '1px solid rgba(0,0,0,0.05)'
+                        }}
+                        onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(102, 126, 234, 0.05)'}
+                        onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+                      >
+                        <td className="text-center align-middle py-3">
+                          <div style={{
+                            background: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
+                            borderRadius: '12px',
+                            padding: '8px 16px',
+                            display: 'inline-block',
+                            color: 'white',
+                            fontWeight: 'bold',
+                            boxShadow: '0 4px 15px rgba(79, 172, 254, 0.3)'
+                          }}>
+                            <i className="bi bi-house-door me-2"></i>
+                            {household.apartmentNumber}
+                          </div>
+                        </td>
+                        <td className="align-middle py-3">
+                          <div className="d-flex align-items-center">
+                            <i className="bi bi-geo-alt text-muted me-2"></i>
+                            <span className="fw-medium">{household.address}</span>
+                          </div>
+                        </td>
+                        <td className="align-middle py-3">
+                          {household.householdHead ? (
+                            <div className="d-flex align-items-center">
+                              <div style={{
+                                width: '35px',
+                                height: '35px',
+                                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                                borderRadius: '50%',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                marginRight: '10px',
+                                boxShadow: '0 3px 10px rgba(102, 126, 234, 0.3)'
+                              }}>
+                                <i className="bi bi-person-fill text-white"></i>
+                              </div>
+                              <span className="fw-semibold text-dark">{household.householdHead.fullName}</span>
+                            </div>
+                          ) : (
+                            <span className="text-muted fst-italic d-flex align-items-center">
+                              <i className="bi bi-person-dash me-2"></i>Chưa Gán
+                            </span>
+                          )}
+                        </td>
+                        <td className="text-center align-middle py-3">
+                          {household.active ? (
+                            <span style={{
+                              background: 'linear-gradient(135deg, #00b894 0%, #00a085 100%)',
+                              color: 'white',
+                              padding: '6px 16px',
+                              borderRadius: '20px',
+                              fontSize: '14px',
+                              fontWeight: '600',
+                              boxShadow: '0 3px 10px rgba(0, 184, 148, 0.3)'
+                            }}>
+                              <i className="bi bi-check-circle me-1"></i>Hoạt Động
+                            </span>
+                          ) : (
+                            <span style={{
+                              background: 'linear-gradient(135deg, #e17055 0%, #d63031 100%)',
+                              color: 'white',
+                              padding: '6px 16px',
+                              borderRadius: '20px',
+                              fontSize: '14px',
+                              fontWeight: '600',
+                              boxShadow: '0 3px 10px rgba(225, 112, 85, 0.3)'
+                            }}>
+                              <i className="bi bi-x-circle me-1"></i>Tạm Ngưng
+                            </span>
+                          )}
+                        </td>
+                        <td className="text-center align-middle py-3">
+                          <div className="d-flex justify-content-center gap-2">
+                            <LinkContainer to={`/households/${household._id}`}>
+                              <Button 
+                                variant="outline-primary" 
+                                size="sm"
+                                className="rounded-pill px-3"
+                                style={{ 
+                                  borderWidth: '2px',
+                                  transition: 'all 0.3s ease'
+                                }}
+                              >
+                                <i className="bi bi-eye me-1"></i>Xem
+                              </Button>
+                            </LinkContainer>
+                            <LinkContainer to={`/households/${household._id}/edit`}>
+                              <Button 
+                                variant="outline-success" 
+                                size="sm"
+                                className="rounded-pill px-3"
+                                style={{ 
+                                  borderWidth: '2px',
+                                  transition: 'all 0.3s ease'
+                                }}
+                              >
+                                <i className="bi bi-pencil me-1"></i>Sửa
+                              </Button>
+                            </LinkContainer>
+                            {userInfo.role === 'admin' && (
+                              <Button
+                                variant="outline-danger"
+                                size="sm"
+                                className="rounded-pill px-3"
+                                onClick={() => deleteHandler(household._id)}
+                                style={{ 
+                                  borderWidth: '2px',
+                                  transition: 'all 0.3s ease'
+                                }}
+                              >
+                                <i className="bi bi-trash me-1"></i>Xóa
+                              </Button>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             )}
-          </Card.Body>
-        </Card>
+          </div>
+        </div>
       )}
+      
       <ConfirmDeleteModal
         show={showConfirm}
         onHide={() => setShowConfirm(false)}
@@ -209,7 +420,7 @@ const HouseholdListScreen = () => {
         cancelText="Hủy"
         loading={loading}
       />
-    </>
+    </div>
   );
 };
 

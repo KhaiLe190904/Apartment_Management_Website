@@ -20,6 +20,8 @@ import ResidentListScreen from './screens/ResidentListScreen';
 import ResidentEditScreen from './screens/ResidentEditScreen';
 import UserListScreen from './screens/UserListScreen';
 import UserEditScreen from './screens/UserEditScreen';
+import VehicleListScreen from './screens/VehicleListScreen';
+import VehicleEditScreen from './screens/VehicleEditScreen';
 import NotFoundScreen from './screens/NotFoundScreen';
 
 function App() {
@@ -57,6 +59,9 @@ function App() {
                 <Route path="/payments/create" element={<PaymentCreateScreen />} />
                 <Route path="/payments/search" element={<PaymentSearchScreen />} />
                 <Route path="/payments/:id" element={<PaymentDetailScreen />} />
+                
+                <Route path="/vehicles" element={<VehicleListScreen />} />
+                <Route path="/vehicles/create" element={<VehicleEditScreen />} />
               </Route>
               
               {/* Routes accessible only to managers and admins */}
@@ -66,6 +71,7 @@ function App() {
                 <Route path="/residents/:id/edit" element={<ResidentEditScreen />} />
                 <Route path="/fees/create" element={<FeeEditScreen />} />
                 <Route path="/fees/:id" element={<FeeEditScreen />} />
+                <Route path="/vehicles/:id/edit" element={<VehicleEditScreen />} />
                 <Route path="/admin/reports" element={<DashboardScreen />} />
               </Route>
               
