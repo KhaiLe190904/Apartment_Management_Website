@@ -11,6 +11,12 @@ const householdSchema = new mongoose.Schema({
     type: String,
     required: [true, 'Address is required']
   },
+  area: {
+    type: Number,
+    required: [true, 'Apartment area is required'],
+    min: [1, 'Area must be at least 1 square meter'],
+    max: [1000, 'Area cannot exceed 1000 square meters']
+  },
   householdHead: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Resident'

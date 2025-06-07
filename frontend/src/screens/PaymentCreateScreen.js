@@ -109,13 +109,57 @@ const PaymentCreateScreen = () => {
   
   // Khi feeId thay đổi, cập nhật số tiền
   useEffect(() => {
-    if (feeId) {
+    if (feeId && householdId) {
+      const fee = fees.find(f => f._id === feeId);
+      if (fee) {
+        // Kiểm tra nếu là phí xe (PHI005) thì tính phí xe tự động
+        if (fee.feeCode === 'PHI005') {
+          fetchVehicleFeeForHousehold();
+        } else {
+          setAmount(fee.amount);
+        }
+      }
+    } else if (feeId) {
       const fee = fees.find(f => f._id === feeId);
       if (fee) {
         setAmount(fee.amount);
       }
     }
-  }, [feeId, fees]);
+  }, [feeId, fees, householdId]);
+
+  // Fetch vehicle fee cho household khi chọn PHI005
+  const fetchVehicleFeeForHousehold = async () => {
+    try {
+      const config = {
+        headers: {
+          Authorization: `Bearer ${userInfo.token}`,
+        },
+      };
+      
+      const response = await axios.get(`/api/vehicle-fees/calculate/${householdId}`, config);
+      
+      if (response.data.data.totalAmount > 0) {
+        setAmount(response.data.data.totalAmount);
+        
+        // Tạo note chi tiết về xe
+        const vehicleDetails = response.data.data.feeDetails.map(detail => 
+          `${detail.count} ${detail.vehicleType}: ${detail.amount.toLocaleString('vi-VN')} VND`
+        ).join(', ');
+        
+        setNote(`Phí gửi xe: ${vehicleDetails}`);
+      } else {
+        setAmount(0);
+        setNote('Hộ gia đình này không có phương tiện nào');
+      }
+    } catch (error) {
+      console.error('Error fetching vehicle fee:', error);
+      // Fallback to default fee amount
+      const fee = fees.find(f => f._id === feeId);
+      if (fee) {
+        setAmount(fee.amount);
+      }
+    }
+  };
   
   // Nếu đã chọn hộ dân và có thông tin về chủ hộ, điền thông tin người thanh toán
   useEffect(() => {

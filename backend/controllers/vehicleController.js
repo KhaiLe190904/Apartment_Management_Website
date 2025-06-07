@@ -44,7 +44,7 @@ const getVehicles = asyncHandler(async (req, res) => {
 
   const totalVehicles = await Vehicle.countDocuments(filter);
   const vehicles = await Vehicle.find(filter)
-    .populate('household', 'apartmentNumber address')
+    .populate('household', 'apartmentNumber address area')
     .populate('owner', 'fullName identityCard phoneNumber')
     .sort({ createdAt: -1 })
     .limit(limit)
@@ -77,7 +77,7 @@ const getVehiclesByHousehold = asyncHandler(async (req, res) => {
 // @access  Private
 const getVehicleById = asyncHandler(async (req, res) => {
   const vehicle = await Vehicle.findById(req.params.id)
-    .populate('household', 'apartmentNumber address')
+    .populate('household', 'apartmentNumber address area')
     .populate('owner', 'fullName identityCard phoneNumber');
 
   if (vehicle && vehicle.active) {
@@ -147,7 +147,7 @@ const createVehicle = asyncHandler(async (req, res) => {
   });
 
   const createdVehicle = await Vehicle.findById(vehicle._id)
-    .populate('household', 'apartmentNumber address')
+    .populate('household', 'apartmentNumber address area')
     .populate('owner', 'fullName identityCard phoneNumber');
 
   res.status(201).json(createdVehicle);
@@ -228,7 +228,7 @@ const updateVehicle = asyncHandler(async (req, res) => {
   const updatedVehicle = await vehicle.save();
 
   const populatedVehicle = await Vehicle.findById(updatedVehicle._id)
-    .populate('household', 'apartmentNumber address')
+    .populate('household', 'apartmentNumber address area')
     .populate('owner', 'fullName identityCard phoneNumber');
 
   res.json(populatedVehicle);

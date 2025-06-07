@@ -107,11 +107,22 @@ const Header = () => {
                     </Nav.Link>
                   </LinkContainer>
                   
-                  <LinkContainer to="/fees">
-                    <Nav.Link className="nav-link-custom">
-                      <i className="bi bi-cash-stack me-1"></i> Phí
-                    </Nav.Link>
-                  </LinkContainer>
+                  <NavDropdown
+                    title={
+                      <>
+                        <i className="bi bi-cash-stack me-1"></i> Phí
+                      </>
+                    }
+                    id="fee-menu"
+                    className="nav-link-custom"
+                  >
+                    <LinkContainer to="/fees">
+                      <NavDropdown.Item>Danh sách phí</NavDropdown.Item>
+                    </LinkContainer>
+                    <LinkContainer to="/vehicle-fees">
+                      <NavDropdown.Item>Phí xe</NavDropdown.Item>
+                    </LinkContainer>
+                  </NavDropdown>
                   
                   <NavDropdown
                     title={

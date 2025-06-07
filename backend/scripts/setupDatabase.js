@@ -230,6 +230,7 @@ async function createMassiveTestData() {
         householdsToCreate.push({
           apartmentNumber: apartmentNumber,
           address: `Căn hộ ${apartmentNumber}, Chung cư BlueMoon, Quận ${Math.floor(Math.random() * 12) + 1}, TP.HCM`,
+          area: Math.floor(Math.random() * 100) + 30, // Diện tích từ 30-129 m²
           note: `Hộ gia đình ${apartmentNumber} - Ngày tạo: ${creationDate.toLocaleDateString('vi-VN')}`,
           creationDate: creationDate,
           active: true
@@ -979,6 +980,15 @@ async function createFees() {
         description: 'Phí đóng góp cho việc sửa chữa các công trình chung',
         startDate: new Date('2023-06-01'),
         endDate: new Date('2023-12-31'),
+        active: true
+      },
+      {
+        feeCode: 'PHI005',
+        name: 'Phí gửi xe',
+        amount: 50000,
+        feeType: 'parking',
+        description: 'Phí gửi xe đạp, xe điện và các loại xe khác hàng tháng',
+        startDate: new Date('2023-01-01'),
         active: true
       }
     ];

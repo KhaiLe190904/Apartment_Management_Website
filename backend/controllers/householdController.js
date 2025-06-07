@@ -41,7 +41,7 @@ exports.getHouseholdById = async (req, res) => {
 // @access  Private/Admin
 exports.createHousehold = async (req, res) => {
   try {
-    const { apartmentNumber, address, note } = req.body;
+    const { apartmentNumber, address, area, note } = req.body;
     
     // Check if household already exists
     const householdExists = await Household.findOne({ apartmentNumber });
@@ -53,6 +53,7 @@ exports.createHousehold = async (req, res) => {
     const household = await Household.create({
       apartmentNumber,
       address,
+      area,
       note
     });
     
@@ -68,7 +69,7 @@ exports.createHousehold = async (req, res) => {
 // @access  Private/Admin
 exports.updateHousehold = async (req, res) => {
   try {
-    const { apartmentNumber, address, householdHead, note, active } = req.body;
+    const { apartmentNumber, address, area, householdHead, note, active } = req.body;
     
     const household = await Household.findById(req.params.id);
     
@@ -94,6 +95,7 @@ exports.updateHousehold = async (req, res) => {
     
     household.apartmentNumber = apartmentNumber || household.apartmentNumber;
     household.address = address || household.address;
+    household.area = area !== undefined ? area : household.area;
     household.householdHead = householdHead || household.householdHead;
     household.note = note !== undefined ? note : household.note;
     household.active = active !== undefined ? active : household.active;

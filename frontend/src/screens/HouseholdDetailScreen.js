@@ -62,8 +62,86 @@ const HouseholdDetailScreen = () => {
     navigate(`/residents/create?household=${household._id}`);
   };
 
-  const handleCreatePayment = (feeId, isDebt = false) => {
-    navigate(`/payments/create?household=${household._id}&fee=${feeId}&isDebt=${isDebt}`);
+  const handleCreatePayment = async (feeId, isDebt = false, isVehicleFee = false) => {
+    if (isVehicleFee) {
+      // Xử lý tự động tạo thanh toán cho phí xe
+      try {
+        setLoading(true);
+        
+        const config = {
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${userInfo.token}`,
+          },
+        };
+        
+        // Tính phí xe cho hộ gia đình
+        const vehicleFeeResponse = await axios.get(`/api/vehicle-fees/calculate/${household._id}`, config);
+        const vehicleFeeData = vehicleFeeResponse.data.data;
+        
+        if (vehicleFeeData.totalAmount <= 0) {
+          setError('Hộ gia đình này không có phương tiện nào để tính phí');
+          return;
+        }
+        
+        // Tạo note chi tiết về xe
+        const vehicleDetails = vehicleFeeData.feeDetails.map(detail => 
+          `${detail.count} ${detail.vehicleType}: ${detail.amount.toLocaleString('vi-VN')} VND`
+        ).join(', ');
+        
+                 // Xác định period dựa trên isDebt
+         let period;
+         let notePrefix = 'Phí gửi xe';
+         
+         if (isDebt) {
+           // Tháng trước cho trả nợ
+           const today = new Date();
+           const lastMonth = today.getMonth() === 0 ? 11 : today.getMonth() - 1;
+           const lastMonthYear = today.getMonth() === 0 ? today.getFullYear() - 1 : today.getFullYear();
+           period = new Date(lastMonthYear, lastMonth, 1).toISOString();
+           notePrefix = 'Trả nợ phí gửi xe';
+         } else {
+           // Tháng hiện tại cho thanh toán bình thường
+           period = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString();
+         }
+         
+         // Tạo thanh toán tự động
+         const paymentData = {
+           household: household._id,
+           fee: feeId,
+           amount: vehicleFeeData.totalAmount,
+           paymentDate: new Date().toISOString(),
+           payerName: household.householdHead?.fullName || 'Chủ hộ',
+           payerId: household.householdHead?.idCard || '',
+           payerPhone: household.householdHead?.phoneNumber || '',
+           receiptNumber: `VF${Date.now()}`, // Vehicle Fee receipt
+           note: `${notePrefix}: ${vehicleDetails}`,
+           period: period,
+           method: 'cash',
+           status: 'paid'
+         };
+        
+        await axios.post('/api/payments', paymentData, config);
+        
+                 // Chuyển hướng đến trang danh sách thanh toán với thông báo thành công
+         navigate('/payments', { 
+           state: { 
+             message: isDebt ? 'Trả nợ phí xe đã được tạo thành công!' : 'Thanh toán phí xe đã được tạo thành công!' 
+           }
+         });
+        
+      } catch (error) {
+        setError(
+          error.response?.data?.message || 
+          'Có lỗi xảy ra khi tạo thanh toán phí xe'
+        );
+      } finally {
+        setLoading(false);
+      }
+    } else {
+      // Xử lý bình thường cho các phí khác
+      navigate(`/payments/create?household=${household._id}&fee=${feeId}&isDebt=${isDebt}`);
+    }
   };
 
   // Helper function to get badge variant based on status
@@ -166,6 +244,19 @@ const HouseholdDetailScreen = () => {
                         <div>
                           <div className="text-muted small">Địa chỉ</div>
                           <div className="fw-semibold">{household.address}</div>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="col-md-6">
+                      <div className="d-flex align-items-center p-3" style={{
+                        background: 'rgba(255, 154, 86, 0.1)',
+                        borderRadius: '15px',
+                        border: '1px solid rgba(255, 154, 86, 0.2)'
+                      }}>
+                        <i className="bi bi-ruler-combined text-info me-3" style={{ fontSize: '1.5rem' }}></i>
+                        <div>
+                          <div className="text-muted small">Diện tích</div>
+                          <div className="fw-semibold">{household.area ? `${household.area} m²` : 'Chưa cập nhật'}</div>
                         </div>
                       </div>
                     </div>
@@ -483,7 +574,7 @@ const HouseholdDetailScreen = () => {
                       onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}>
                         <div className="d-flex align-items-center justify-content-between mb-3">
                           <h6 className="mb-0 fw-bold text-dark">{fee.name}</h6>
-                          <i className="bi bi-cash-coin text-success" style={{ fontSize: '1.2rem' }}></i>
+                          <i className={`bi ${fee.feeType === 'vehicle' ? 'bi-car-front' : 'bi-cash-coin'} text-success`} style={{ fontSize: '1.2rem' }}></i>
                         </div>
                         
                         <div className="mb-3">
@@ -491,6 +582,18 @@ const HouseholdDetailScreen = () => {
                           <div className="fw-bold text-success fs-5">
                             {fee.amount.toLocaleString('vi-VN')} VND
                           </div>
+                          
+                          {/* Hiển thị chi tiết xe nếu có */}
+                          {fee.vehicleDetails && fee.vehicleDetails.length > 0 && (
+                            <div className="mt-2">
+                              <div className="text-muted small mb-1">Chi tiết xe</div>
+                              {fee.vehicleDetails.map((detail, idx) => (
+                                <div key={idx} className="small text-dark">
+                                  • {detail.count} {detail.vehicleType}: {detail.amount.toLocaleString('vi-VN')} VND
+                                </div>
+                              ))}
+                            </div>
+                          )}
                         </div>
                         
                         <div className="row g-2 mb-3">
@@ -515,9 +618,10 @@ const HouseholdDetailScreen = () => {
                               variant="success" 
                               size="sm"
                               className="rounded-pill flex-grow-1"
-                              onClick={() => handleCreatePayment(fee._id)}
+                              onClick={() => handleCreatePayment(fee._id, false, fee.isVehicleFee)}
                             >
-                              <i className="bi bi-credit-card me-1"></i> Thanh toán
+                              <i className={`bi ${fee.isVehicleFee ? 'bi-car-front' : 'bi-credit-card'} me-1`}></i> 
+                              {fee.isVehicleFee ? 'Thanh toán phí xe' : 'Thanh toán'}
                             </Button>
                           )}
                           {fee.lastMonthStatus === 'overdue' && fee.currentMonthStatus === 'paid' && (
@@ -525,7 +629,7 @@ const HouseholdDetailScreen = () => {
                               variant="warning" 
                               size="sm"
                               className="rounded-pill flex-grow-1"
-                              onClick={() => handleCreatePayment(fee._id, true)}
+                              onClick={() => handleCreatePayment(fee._id, true, fee.isVehicleFee)}
                             >
                               <i className="bi bi-exclamation-triangle me-1"></i> Trả nợ
                             </Button>

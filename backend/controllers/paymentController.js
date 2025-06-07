@@ -246,12 +246,18 @@ const getHouseholdFeeStatus = asyncHandler(async (req, res) => {
     throw new Error('Không tìm thấy hộ gia đình');
   }
   
-  // Lấy tất cả các loại phí đang hoạt động
-  const activeFees = await Fee.find({ active: true });
+  // Import vehicle fee service
+  const vehicleFeeService = require('../services/vehicleFeeService');
+  
+  // Lấy các loại phí đang hoạt động (loại trừ tất cả phí xe)
+  const activeFees = await Fee.find({ 
+    active: true,
+    feeCode: { $nin: ['PHI002', 'PHI003', 'PHI005'] } // Loại trừ tất cả phí xe riêng lẻ
+  });
   
   // Lấy tất cả các khoản thanh toán của hộ gia đình
   const householdPayments = await Payment.find({ household: householdId })
-    .populate('fee', 'name feeType amount startDate endDate');
+    .populate('fee', 'name feeType amount startDate endDate feeCode');
   
   // Lấy tháng hiện tại và tháng trước
   const today = new Date();
@@ -306,6 +312,81 @@ const getHouseholdFeeStatus = asyncHandler(async (req, res) => {
       lastMonthPayment: lastMonthPayment || null
     };
   });
+  
+  // Tính phí xe cho hộ gia đình này
+  try {
+    const vehicleFeeCalculation = await vehicleFeeService.calculateVehicleFeeForHousehold(householdId);
+    
+    // Chỉ hiển thị phí xe nếu hộ gia đình có xe và tổng phí > 0
+    if (vehicleFeeCalculation.totalAmount > 0 && vehicleFeeCalculation.totalVehicles > 0) {
+      // Tìm các khoản thanh toán phí xe trong tháng hiện tại và tháng trước
+      const vehiclePayments = householdPayments.filter(payment => 
+        payment.fee.feeCode && ['PHI002', 'PHI003', 'PHI005'].includes(payment.fee.feeCode)
+      );
+      
+      const currentMonthVehiclePayments = vehiclePayments.filter(payment => 
+        (payment.period && 
+         payment.period >= firstDayCurrentMonth &&
+         payment.period <= lastDayCurrentMonth) ||
+        (!payment.period &&
+         payment.paymentDate >= firstDayCurrentMonth &&
+         payment.paymentDate <= lastDayCurrentMonth)
+      );
+      
+      const lastMonthVehiclePayments = vehiclePayments.filter(payment => 
+        (payment.period && 
+         payment.period >= firstDayLastMonth &&
+         payment.period <= lastDayLastMonth) ||
+        (!payment.period &&
+         payment.paymentDate >= firstDayLastMonth &&
+         payment.paymentDate <= lastDayLastMonth)
+      );
+      
+      // Tính tổng số tiền đã thanh toán và kiểm tra tính hợp lệ
+      const currentMonthVehiclePaid = currentMonthVehiclePayments.reduce((sum, p) => sum + p.amount, 0);
+      const lastMonthVehiclePaid = lastMonthVehiclePayments.reduce((sum, p) => sum + p.amount, 0);
+
+      // Kiểm tra xem có payment nào trong tháng không và số tiền có đủ không
+      const isCurrentMonthPaymentValid = currentMonthVehiclePayments.length > 0 && 
+        currentMonthVehiclePaid >= vehicleFeeCalculation.totalAmount;
+
+      const isLastMonthPaymentValid = lastMonthVehiclePayments.length > 0 && 
+        lastMonthVehiclePaid >= vehicleFeeCalculation.totalAmount;
+
+
+      
+      // Xác định trạng thái tháng trước
+      let lastMonthStatus = 'not_applicable';
+      
+      if (vehicleFeeCalculation.totalAmount > 0) {
+        if (isLastMonthPaymentValid) {
+          lastMonthStatus = 'paid';
+        } else {
+          lastMonthStatus = 'overdue'; // Nếu có xe nhưng chưa trả đúng phí
+        }
+      }
+       
+       // Tìm fee "Phí gửi xe khác" để làm đại diện cho phí xe gộp chung
+       const vehicleFeeRepresentative = await Fee.findOne({ feeCode: 'PHI005', active: true });
+       
+       // Thêm mục phí xe gộp chung với ID đặc biệt
+       feeStatus.push({
+         _id: 'vehicle-fee-combined', // Sử dụng ID đặc biệt thay vì ID của PHI005
+         name: 'Phí gửi xe',
+         feeType: 'vehicle',
+         amount: vehicleFeeCalculation.totalAmount,
+         currentMonthStatus: isCurrentMonthPaymentValid ? 'paid' : 'pending',
+         lastMonthStatus: lastMonthStatus,
+         currentMonthPayment: currentMonthVehiclePayments.length > 0 ? currentMonthVehiclePayments[0] : null,
+         lastMonthPayment: lastMonthVehiclePayments.length > 0 ? lastMonthVehiclePayments[0] : null,
+         vehicleDetails: vehicleFeeCalculation.feeDetails, // Chi tiết xe để hiển thị
+         isVehicleFee: true // Flag để frontend nhận biết đây là phí xe gộp chung
+       });
+    }
+  } catch (error) {
+    console.error('Error calculating vehicle fee:', error);
+    // Không làm gì nếu có lỗi, chỉ bỏ qua phí xe
+  }
   
   res.json({
     household: {

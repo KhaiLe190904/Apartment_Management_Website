@@ -400,4 +400,125 @@ a:hover, .link-primary:hover, .text-primary:hover {
   background: #212529;
   color: white;
   transform: translateY(-2px);
+}
+
+/* Vehicle Fee Screen Styles */
+.vehicle-fee-screen .hero-section {
+  background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+  border-radius: 1.5rem;
+  padding: 2rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 4px 20px rgba(33,37,41,0.1);
+}
+
+.vehicle-fee-screen .hero-title {
+  color: #212529;
+  font-weight: 800;
+  font-size: 2.5rem;
+}
+
+.vehicle-fee-screen .hero-subtitle {
+  color: #6c757d;
+  font-size: 1.1rem;
+  font-weight: 500;
+}
+
+.vehicle-fee-screen .stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.vehicle-fee-screen .stat-item {
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  padding: 1.5rem;
+  border-radius: 15px;
+  text-align: center;
+  border: 1px solid rgba(33,37,41,0.1);
+}
+
+.vehicle-fee-screen .stat-number {
+  font-size: 2rem;
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+}
+
+.vehicle-fee-screen .stat-label {
+  color: #6c757d;
+  font-size: 0.9rem;
+}
+
+.vehicle-fee-screen .stat-card {
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  padding: 1.5rem;
+  border-radius: 15px;
+  text-align: center;
+  border: 1px solid rgba(33,37,41,0.1);
+}
+
+.vehicle-fee-screen .stat-card .stat-number {
+  font-size: 2rem;
+  font-weight: bold;
+  color: #495057;
+  margin-bottom: 0.5rem;
+}
+
+.vehicle-fee-screen .stat-card .stat-label {
+  color: #6c757d;
+  font-size: 0.9rem;
+}
+
+.vehicle-fee-screen .form-card {
+  background: rgba(255,255,255,0.95);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(33,37,41,0.1);
+  box-shadow: 0 4px 20px rgba(33,37,41,0.08);
+  border-radius: 1.5rem;
+}
+
+.vehicle-fee-screen .form-header {
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  color: #212529;
+  font-weight: 700;
+  border-radius: 1.5rem 1.5rem 0 0;
+}
+
+.vehicle-fee-screen .gradient-btn {
+  background: linear-gradient(135deg, #212529 0%, #495057 100%);
+  border: none;
+  color: white;
+  font-weight: 600;
+  padding: 0.6rem 1.5rem;
+  border-radius: 1.5rem;
+  transition: all 0.3s ease;
+}
+
+.vehicle-fee-screen .gradient-btn:hover {
+  background: linear-gradient(135deg, #495057 0%, #6c757d 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(33,37,41,0.2);
+}
+
+.vehicle-fee-screen .gradient-btn-outline {
+  border: 2px solid #212529;
+  color: #212529;
+  background: transparent;
+  font-weight: 600;
+  padding: 0.6rem 1.5rem;
+  border-radius: 1.5rem;
+  transition: all 0.3s ease;
+}
+
+.vehicle-fee-screen .gradient-btn-outline:hover {
+  background: #212529;
+  color: white;
+  transform: translateY(-2px);
+}
+
+.vehicle-fee-screen .apartment-badge {
+  background: linear-gradient(135deg, #212529 0%, #495057 100%);
+  color: white;
+  font-weight: 600;
+  padding: 0.4rem 0.8rem;
+  border-radius: 1rem;
 } 

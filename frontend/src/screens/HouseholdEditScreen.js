@@ -13,6 +13,7 @@ const HouseholdEditScreen = () => {
   
   const [apartmentNumber, setApartmentNumber] = useState('');
   const [address, setAddress] = useState('');
+  const [area, setArea] = useState('');
   const [note, setNote] = useState('');
   const [active, setActive] = useState(true);
   
@@ -44,6 +45,7 @@ const HouseholdEditScreen = () => {
       
       setApartmentNumber(data.apartmentNumber);
       setAddress(data.address);
+      setArea(data.area || '');
       setNote(data.note || '');
       setActive(data.active);
       
@@ -67,6 +69,12 @@ const HouseholdEditScreen = () => {
     
     if (!address.trim()) {
       errors.address = 'Địa chỉ là bắt buộc';
+    }
+    
+    if (!area || area <= 0) {
+      errors.area = 'Diện tích phải là số dương';
+    } else if (area > 1000) {
+      errors.area = 'Diện tích không được vượt quá 1000 m²';
     }
     
     setValidationErrors(errors);
@@ -94,6 +102,7 @@ const HouseholdEditScreen = () => {
       const householdData = {
         apartmentNumber,
         address,
+        area: parseFloat(area),
         note,
         active
       };
@@ -168,6 +177,26 @@ const HouseholdEditScreen = () => {
               <Form.Control.Feedback type='invalid'>
                 {validationErrors.address}
               </Form.Control.Feedback>
+            </Form.Group>
+            <Form.Group controlId='area' className='mb-3'>
+              <Form.Label><i className="fas fa-ruler-combined me-1 text-info"></i> Diện Tích Căn Hộ (m²)</Form.Label>
+              <Form.Control
+                type='number'
+                placeholder='Nhập diện tích (m²)...'
+                value={area}
+                onChange={(e) => setArea(e.target.value)}
+                isInvalid={!!validationErrors.area}
+                min='1'
+                max='1000'
+                step='0.1'
+                required
+              />
+              <Form.Control.Feedback type='invalid'>
+                {validationErrors.area}
+              </Form.Control.Feedback>
+              <Form.Text className="text-muted">
+                Diện tích từ 1 đến 1000 m²
+              </Form.Text>
             </Form.Group>
             <Form.Group controlId='note' className='mb-3'>
               <Form.Label><i className="fas fa-sticky-note me-1 text-warning"></i> Ghi Chú</Form.Label>

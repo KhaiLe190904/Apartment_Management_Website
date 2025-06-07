@@ -263,6 +263,9 @@ const HouseholdListScreen = () => {
                       <th className="fw-bold py-3 border-0" style={{ color: '#2d3748' }}>
                         <i className="bi bi-geo-alt me-2"></i>Địa Chỉ
                       </th>
+                      <th className="fw-bold text-center py-3 border-0" style={{ color: '#2d3748' }}>
+                        <i className="bi bi-ruler-combined me-2"></i>Diện Tích
+                      </th>
                       <th className="fw-bold py-3 border-0" style={{ color: '#2d3748' }}>
                         <i className="bi bi-person-badge me-2"></i>Chủ Hộ
                       </th>
@@ -303,6 +306,21 @@ const HouseholdListScreen = () => {
                           <div className="d-flex align-items-center">
                             <i className="bi bi-geo-alt text-muted me-2"></i>
                             <span className="fw-medium">{household.address}</span>
+                          </div>
+                        </td>
+                        <td className="text-center align-middle py-3">
+                          <div style={{
+                            background: 'linear-gradient(135deg, #ff9a56 0%, #ff6b6b 100%)',
+                            borderRadius: '10px',
+                            padding: '6px 12px',
+                            display: 'inline-block',
+                            color: 'white',
+                            fontWeight: 'bold',
+                            fontSize: '14px',
+                            boxShadow: '0 3px 10px rgba(255, 154, 86, 0.3)'
+                          }}>
+                            <i className="bi bi-aspect-ratio me-1"></i>
+                            {household.area ? `${household.area} m²` : 'N/A'}
                           </div>
                         </td>
                         <td className="align-middle py-3">

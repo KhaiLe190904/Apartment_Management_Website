@@ -15,7 +15,7 @@ exports.getResidents = async (req, res) => {
     }
     
     const residents = await Resident.find(filter)
-      .populate('household', 'apartmentNumber');
+      .populate('household', 'apartmentNumber area');
     
     res.json(residents);
   } catch (error) {
@@ -30,7 +30,7 @@ exports.getResidents = async (req, res) => {
 exports.getResidentById = async (req, res) => {
   try {
     const resident = await Resident.findById(req.params.id)
-      .populate('household', 'apartmentNumber address');
+      .populate('household', 'apartmentNumber address area');
     
     if (!resident) {
       return res.status(404).json({ message: 'Resident not found' });
