@@ -66,7 +66,11 @@ exports.createResident = async (req, res) => {
       workplace,
       phone,
       household,
-      note
+      note,
+      tempStatus,
+      tempStartDate,
+      tempEndDate,
+      tempReason
     } = req.body;
     
     // Check if resident with this ID card already exists
@@ -102,7 +106,11 @@ exports.createResident = async (req, res) => {
       workplace,
       phone,
       household,
-      note
+      note,
+      tempStatus,
+      tempStartDate,
+      tempEndDate,
+      tempReason
     });
 
     // Auto-assign as household head if this is the first resident and no head exists
@@ -153,7 +161,7 @@ exports.updateResident = async (req, res) => {
     const fields = [
       'fullName', 'dateOfBirth', 'gender', 'idCard', 'idCardDate', 'idCardPlace',
       'placeOfBirth', 'nationality', 'ethnicity', 'religion', 'occupation', 'workplace',
-      'phone', 'household', 'note', 'active'
+      'phone', 'household', 'note', 'active', 'tempStatus', 'tempStartDate', 'tempEndDate', 'tempReason'
     ];
     
     fields.forEach(field => {

@@ -423,7 +423,7 @@ const ResidentEditScreen = () => {
             </Form.Group>
             {/* Temp Status Section */}
             <Card className="border-info mb-3">
-              <Card.Header className="bg-info text-white">
+              <Card.Header className="bg-info text-black">
                 <i className="fas fa-address-card me-2"></i>Trạng Thái Tạm Trú/Tạm Vắng
               </Card.Header>
               <Card.Body>
