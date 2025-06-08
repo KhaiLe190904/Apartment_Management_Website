@@ -299,10 +299,10 @@ const getHouseholdFeeStatus = asyncHandler(async (req, res) => {
   const vehicleFeeService = require('../services/vehicleFeeService');
   const areaBasedFeeService = require('../services/areaBasedFeeService');
   
-  // Lấy các loại phí đang hoạt động (loại trừ tất cả phí xe và phí theo diện tích)
+  // Lấy các loại phí đang hoạt động (loại trừ tất cả phí xe, phí theo diện tích và phí vệ sinh)
   const activeFees = await Fee.find({ 
     active: true,
-    feeCode: { $nin: ['PHI002', 'PHI003', 'PHI005', 'PHI006', 'PHI007'] } // Loại trừ phí xe và phí theo diện tích riêng lẻ
+    feeCode: { $nin: ['PHI002', 'PHI003', 'PHI005', 'PHI006', 'PHI007', 'PHI008'] } // Loại trừ phí xe, phí theo diện tích và phí vệ sinh riêng lẻ
   });
   
   // Lấy tất cả các khoản thanh toán của hộ gia đình
