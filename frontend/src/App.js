@@ -14,6 +14,7 @@ import FeeListScreen from './screens/FeeListScreen';
 import FeeEditScreen from './screens/FeeEditScreen';
 import PaymentListScreen from './screens/PaymentListScreen';
 import PaymentCreateScreen from './screens/PaymentCreateScreen';
+import PaymentEditScreen from './screens/PaymentEditScreen';
 import PaymentSearchScreen from './screens/PaymentSearchScreen';
 import PaymentDetailScreen from './screens/PaymentDetailScreen';
 import ResidentListScreen from './screens/ResidentListScreen';
@@ -76,6 +77,7 @@ function App() {
                 <Route path="/residents/:id/edit" element={<ResidentEditScreen />} />
                 <Route path="/fees/create" element={<FeeEditScreen />} />
                 <Route path="/fees/:id" element={<FeeEditScreen />} />
+                <Route path="/payments/:id/edit" element={<PaymentEditScreen />} />
                 <Route path="/vehicles/:id/edit" element={<VehicleEditScreen />} />
                 <Route path="/admin/reports" element={<DashboardScreen />} />
               </Route>

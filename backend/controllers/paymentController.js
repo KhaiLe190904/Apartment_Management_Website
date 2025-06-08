@@ -118,18 +118,66 @@ const createPayment = asyncHandler(async (req, res) => {
 const updatePayment = asyncHandler(async (req, res) => {
   const payment = await Payment.findById(req.params.id);
 
-  if (payment) {
-    payment.status = req.body.status || payment.status;
-    payment.paymentDate = req.body.paymentDate || payment.paymentDate;
-    payment.amount = req.body.amount || payment.amount;
-    payment.method = req.body.method || payment.method;
-
-    const updatedPayment = await payment.save();
-    res.json(updatedPayment);
-  } else {
+  if (!payment) {
     res.status(404);
     throw new Error('Payment not found');
   }
+
+  const {
+    amount,
+    paymentDate,
+    payerName,
+    payerId,
+    payerPhone,
+    receiptNumber,
+    method,
+    note,
+    status
+  } = req.body;
+
+  // Update payment fields
+  payment.amount = amount || payment.amount;
+  payment.paymentDate = paymentDate || payment.paymentDate;
+  payment.payerName = payerName || payment.payerName;
+  payment.payerId = payerId || payment.payerId;
+  payment.payerPhone = payerPhone || payment.payerPhone;
+  payment.receiptNumber = receiptNumber || payment.receiptNumber;
+  payment.method = method || payment.method;
+  payment.note = note || payment.note;
+  payment.status = status || payment.status;
+
+  const updatedPayment = await payment.save();
+
+  // Populate the updated payment with fee and household details
+  const populatedPayment = await Payment.findById(updatedPayment._id)
+    .populate('fee', 'name feeType amount')
+    .populate('household', 'apartmentNumber')
+    .populate('collector', 'name');
+
+  res.json(populatedPayment);
+});
+
+// @desc    Delete a payment
+// @route   DELETE /api/payments/:id
+// @access  Private/Admin
+const deletePayment = asyncHandler(async (req, res) => {
+  const payment = await Payment.findById(req.params.id);
+
+  if (!payment) {
+    res.status(404);
+    throw new Error('Payment not found');
+  }
+
+  await Payment.findByIdAndDelete(req.params.id);
+
+  res.json({ 
+    message: 'Payment deleted successfully',
+    deletedPayment: {
+      id: payment._id,
+      amount: payment.amount,
+      paymentDate: payment.paymentDate
+    }
+  });
 });
 
 // @desc    Get payments by household
@@ -538,6 +586,7 @@ module.exports = {
   getPaymentById,
   createPayment,
   updatePayment,
+  deletePayment,
   getPaymentsByHousehold,
   getPaymentsByFee,
   searchPayments,

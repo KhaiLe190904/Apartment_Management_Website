@@ -4,6 +4,7 @@ const {
   getPaymentById,
   createPayment,
   updatePayment,
+  deletePayment,
   getPaymentsByHousehold,
   getPaymentsByFee,
   searchPayments,
@@ -34,6 +35,7 @@ router.route('/fee/:id')
 
 router.route('/:id')
   .get(getPaymentById)
-  .put(authorize('admin', 'accountant'), updatePayment);
+  .put(authorize('admin', 'accountant'), updatePayment)
+  .delete(authorize('admin'), deletePayment);
 
 module.exports = router; 

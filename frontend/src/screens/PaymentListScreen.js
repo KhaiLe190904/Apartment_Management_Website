@@ -22,6 +22,9 @@ const PaymentListScreen = () => {
   // Check if user is admin
   const isAdmin = userInfo && (userInfo.role === 'admin' || userInfo.role === 'accountant');
   
+  // Debug log to check user role
+  console.log('User role:', userInfo?.role, 'isAdmin:', isAdmin);
+  
   useEffect(() => {
     fetchPayments();
   }, [userInfo]);
@@ -68,6 +71,33 @@ const PaymentListScreen = () => {
           error.response && error.response.data.message
             ? error.response.data.message
             : 'Không thể hoàn tiền khoản thanh toán'
+        );
+        setLoading(false);
+      }
+    }
+  };
+
+  const handleDelete = async (id) => {
+    if (window.confirm('Bạn có chắc chắn muốn xóa khoản thanh toán này? Hành động này không thể hoàn tác.')) {
+      try {
+        setLoading(true);
+        
+        const config = {
+          headers: {
+            Authorization: `Bearer ${userInfo.token}`,
+          },
+        };
+        
+        await axios.delete(`/api/payments/${id}`, config);
+        
+        // Remove the deleted payment from local state
+        setPayments(payments.filter(payment => payment._id !== id));
+        setLoading(false);
+      } catch (error) {
+        setError(
+          error.response && error.response.data.message
+            ? error.response.data.message
+            : 'Không thể xóa khoản thanh toán'
         );
         setLoading(false);
       }
@@ -205,6 +235,28 @@ const PaymentListScreen = () => {
                           >
                             Xem
                           </Button>
+                          {isAdmin && (
+                            <>
+                              <Button
+                                variant="outline-primary"
+                                className="mx-1 small"
+                                onClick={() => navigate(`/payments/${payment._id}/edit`)}
+                                title="Chỉnh sửa"
+                                style={{fontSize: '0.85rem', borderRadius: '1rem'}}
+                              >
+                                <i className="bi bi-pencil me-1"></i>Sửa
+                              </Button>
+                              <Button
+                                variant="outline-danger"
+                                className="mx-1 small"
+                                onClick={() => handleDelete(payment._id)}
+                                title="Xóa"
+                                style={{fontSize: '0.85rem', borderRadius: '1rem'}}
+                              >
+                                <i className="bi bi-trash me-1"></i>Xóa
+                              </Button>
+                            </>
+                          )}
                         </div>
                       </td>
                     </tr>

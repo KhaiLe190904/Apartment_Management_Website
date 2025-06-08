@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
-import { Row, Col, ListGroup, Badge, Container, Card } from 'react-bootstrap';
+import { Row, Col, ListGroup, Badge, Container, Card, Button } from 'react-bootstrap';
 import axios from 'axios';
 import Loader from '../components/Loader';
 import Message from '../components/Message';
@@ -15,6 +15,30 @@ const PaymentDetailScreen = () => {
   const [error, setError] = useState('');
   
   const { userInfo } = useContext(AuthContext);
+  
+  // Check if user is admin
+  const isAdmin = userInfo && (userInfo.role === 'admin' || userInfo.role === 'accountant');
+  
+  const handleDelete = async () => {
+    if (window.confirm('Bạn có chắc chắn muốn xóa khoản thanh toán này? Hành động này không thể hoàn tác.')) {
+      try {
+        const config = {
+          headers: {
+            Authorization: `Bearer ${userInfo.token}`,
+          },
+        };
+        
+        await axios.delete(`/api/payments/${id}`, config);
+        navigate('/payments');
+      } catch (error) {
+        setError(
+          error.response && error.response.data.message
+            ? error.response.data.message
+            : 'Không thể xóa khoản thanh toán'
+        );
+      }
+    }
+  };
   
   useEffect(() => {
     const fetchPayment = async () => {
@@ -47,9 +71,31 @@ const PaymentDetailScreen = () => {
   
   return (
     <Container>
-      <Link to="/payments" className="btn btn-light my-3">
-        <i className="fas fa-arrow-left"></i> Quay lại
-      </Link>
+      <Row className="align-items-center my-3">
+        <Col>
+          <Link to="/payments" className="btn btn-light">
+            <i className="fas fa-arrow-left"></i> Quay lại
+          </Link>
+        </Col>
+        <Col className="text-end">
+          {isAdmin && (
+            <div className="d-flex gap-2 justify-content-end">
+              <Button 
+                variant="outline-primary"
+                onClick={() => navigate(`/payments/${id}/edit`)}
+              >
+                <i className="bi bi-pencil me-1"></i>Sửa
+              </Button>
+              <Button 
+                variant="outline-danger"
+                onClick={handleDelete}
+              >
+                <i className="bi bi-trash me-1"></i>Xóa
+              </Button>
+            </div>
+          )}
+        </Col>
+      </Row>
       {loading ? (
         <Loader />
       ) : error ? (
