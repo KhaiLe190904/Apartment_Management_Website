@@ -2,6 +2,7 @@ const Payment = require('../models/paymentModel');
 const Fee = require('../models/feeModel');
 const Household = require('../models/householdModel');
 const asyncHandler = require('express-async-handler');
+const hygieneFeeService = require('../services/hygieneFeeService');
 
 // @desc    Get all payments
 // @route   GET /api/payments
@@ -458,6 +459,69 @@ const getHouseholdFeeStatus = asyncHandler(async (req, res) => {
   } catch (error) {
     console.error('Error calculating area-based fee:', error);
     // Không làm gì nếu có lỗi, chỉ bỏ qua phí theo diện tích
+  }
+  
+  // Tính phí vệ sinh cho hộ gia đình này (thu 1 lần/năm)
+  try {
+    const hygieneFeeCalculation = await hygieneFeeService.calculateHygieneFeeForHousehold(householdId);
+    
+    // Chỉ hiển thị phí vệ sinh nếu hộ gia đình có cư dân hoạt động
+    if (hygieneFeeCalculation.totalAmount > 0 && hygieneFeeCalculation.residentCount > 0) {
+      // Lấy fee phí vệ sinh
+      const hygieneFee = await Fee.findOne({
+        feeCode: hygieneFeeService.HYGIENE_FEE_INFO.feeCode,
+        active: true
+      });
+      
+      if (hygieneFee) {
+        // Tính năm hiện tại để kiểm tra thanh toán
+        const currentYear = new Date().getFullYear();
+        const currentYearStart = new Date(currentYear, 0, 1);
+        const currentYearEnd = new Date(currentYear + 1, 0, 1);
+        
+        // Tìm thanh toán phí vệ sinh cho năm hiện tại
+        const currentYearHygienePayment = householdPayments.find(payment => 
+          payment.fee._id.toString() === hygieneFee._id.toString() && 
+          payment.period &&
+          payment.period >= currentYearStart &&
+          payment.period < currentYearEnd
+        );
+        
+        // Tìm thanh toán phí vệ sinh cho năm trước
+        const lastYearStart = new Date(currentYear - 1, 0, 1);
+        const lastYearEnd = new Date(currentYear, 0, 1);
+        const lastYearHygienePayment = householdPayments.find(payment => 
+          payment.fee._id.toString() === hygieneFee._id.toString() && 
+          payment.period &&
+          payment.period >= lastYearStart &&
+          payment.period < lastYearEnd
+        );
+        
+        // Xác định trạng thái thanh toán
+        const currentYearStatus = currentYearHygienePayment ? 'paid' : 'pending';
+        const lastYearStatus = lastYearHygienePayment ? 'paid' : 'overdue';
+        
+        // Thêm phí vệ sinh vào danh sách
+        feeStatus.push({
+          _id: 'hygiene-fee-combined', // ID đặc biệt cho phí vệ sinh
+          name: 'Phí vệ sinh',
+          feeType: 'hygiene',
+          amount: hygieneFeeCalculation.totalAmount,
+          currentMonthStatus: currentYearStatus, // Sử dụng year thay vì month
+          lastMonthStatus: lastYearStatus, // Năm trước
+          currentMonthPayment: currentYearHygienePayment || null,
+          lastMonthPayment: lastYearHygienePayment || null,
+          hygieneDetails: hygieneFeeCalculation.feeDetails, // Chi tiết phí vệ sinh
+          residentCount: hygieneFeeCalculation.residentCount,
+          residents: hygieneFeeCalculation.residents,
+          isHygieneFee: true, // Flag để frontend nhận biết đây là phí vệ sinh
+          paymentCycle: 'yearly' // Thêm thông tin chu kỳ thanh toán
+        });
+      }
+    }
+  } catch (error) {
+    console.error('Error calculating hygiene fee:', error);
+    // Không làm gì nếu có lỗi, chỉ bỏ qua phí vệ sinh
   }
   
   res.json({

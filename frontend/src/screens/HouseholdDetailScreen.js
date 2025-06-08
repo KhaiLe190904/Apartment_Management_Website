@@ -97,7 +97,7 @@ const HouseholdDetailScreen = () => {
     setShowHeadModal(true);
   };
 
-  const handleCreatePayment = async (feeId, isDebt = false, isVehicleFee = false, isAreaFee = false) => {
+  const handleCreatePayment = async (feeId, isDebt = false, isVehicleFee = false, isAreaFee = false, isHygieneFee = false) => {
     console.log('🎯 Debug - handleCreatePayment được gọi với:', {
       feeId,
       isDebt,
@@ -572,6 +572,140 @@ const HouseholdDetailScreen = () => {
             error.response && error.response.data.message
               ? error.response.data.message
               : 'Có lỗi xảy ra khi tạo thanh toán phí dịch vụ & chung cư'
+          );
+        }
+      } finally {
+        setLoading(false);
+      }
+    } else if (isHygieneFee) {
+      // Xử lý tự động tạo thanh toán cho phí vệ sinh
+      try {
+        setLoading(true);
+        
+        const config = {
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${userInfo.token}`,
+          },
+        };
+        
+        // Tính phí vệ sinh cho hộ gia đình
+        const hygieneFeeResponse = await axios.get(`/api/hygiene-fees/calculate/${household._id}`, config);
+        const hygieneFeeData = hygieneFeeResponse.data.data;
+        
+        console.log('🧽 Debug - Dữ liệu phí vệ sinh từ API:', {
+          householdId: household._id,
+          apartmentNumber: household.apartmentNumber,
+          residentCount: hygieneFeeData.residentCount,
+          totalAmount: hygieneFeeData.totalAmount,
+          residents: hygieneFeeData.residents
+        });
+        
+        if (hygieneFeeData.totalAmount <= 0) {
+          setError('Hộ gia đình này không có cư dân hoạt động để tính phí vệ sinh');
+          return;
+        }
+        
+        // Lấy fee PHI008 (phí vệ sinh)
+        const feesResponse = await axios.get('/api/fees', config);
+        const hygieneFee = feesResponse.data.find(fee => fee.feeCode === 'PHI008' && fee.active);
+        
+        if (!hygieneFee) {
+          setError('Không tìm thấy loại phí vệ sinh PHI008 trong hệ thống');
+          return;
+        }
+        
+        // Xác định period dựa trên isDebt (năm thay vì tháng)
+        let period;
+        let notePrefix = 'Phí vệ sinh';
+        
+        const today = new Date();
+        let targetYear;
+        
+        if (isDebt) {
+          // Năm trước cho trả nợ
+          targetYear = today.getFullYear() - 1;
+          notePrefix = 'Trả nợ phí vệ sinh';
+        } else {
+          // Năm hiện tại cho thanh toán bình thường
+          targetYear = today.getFullYear();
+        }
+        
+        // Tạo period cho ngày 1/1 của năm
+        period = new Date(targetYear, 0, 1).toISOString();
+        
+        console.log('🧽 Debug - Tạo thanh toán phí vệ sinh:', {
+          targetYear,
+          period,
+          isDebt,
+          totalAmount: hygieneFeeData.totalAmount,
+          residentCount: hygieneFeeData.residentCount
+        });
+        
+        // Kiểm tra thanh toán đã tồn tại
+        const existingPaymentsResponse = await axios.get(`/api/payments/household/${household._id}`, config);
+        const existingPayments = existingPaymentsResponse.data;
+        
+        const conflictingPayment = existingPayments.find(payment => {
+          const sameFee = payment.fee._id === hygieneFee._id;
+          const sameYear = payment.period && 
+            new Date(payment.period).getFullYear() === targetYear;
+          return sameFee && sameYear;
+        });
+
+        if (conflictingPayment) {
+          const yearText = isDebt ? 'năm trước' : 'năm này';
+          setError(`Đã có thanh toán phí vệ sinh cho ${yearText}. Vui lòng kiểm tra lại trong danh sách thanh toán.`);
+          setTimeout(() => {
+            navigate(`/payments?household=${household._id}`);
+          }, 2000);
+          return;
+        }
+        
+        // Tạo thanh toán
+        const paymentData = {
+          household: household._id,
+          fee: hygieneFee._id,
+          amount: hygieneFeeData.totalAmount,
+          paymentDate: new Date().toISOString(),
+          payerName: household.householdHead?.fullName || 'Chủ hộ',
+          payerId: household.householdHead?.idCard || '',
+          payerPhone: household.householdHead?.phoneNumber || '',
+          receiptNumber: `HF${Date.now()}`, // Hygiene Fee receipt
+          note: `${notePrefix} năm ${targetYear}: ${hygieneFeeData.residentCount} nhân khẩu × 6.000 VND/tháng × 12 tháng`,
+          period: period,
+          method: 'cash',
+          status: 'paid'
+        };
+        
+        const createPaymentResponse = await axios.post('/api/payments', paymentData, config);
+        console.log('✅ Tạo thành công payment phí vệ sinh:', createPaymentResponse.data);
+        
+        const message = isDebt ? 
+          'Trả nợ phí vệ sinh đã được tạo thành công!' : 
+          'Thanh toán phí vệ sinh đã được tạo thành công!';
+        
+        // Chuyển hướng đến trang danh sách thanh toán với thông báo thành công
+        navigate('/payments', { 
+          state: { message }
+        });
+        
+      } catch (error) {
+        console.error('🔥 Debug - Lỗi tạo thanh toán phí vệ sinh:', error);
+        
+        if (error.response?.data?.message?.includes('already exists') || 
+            error.response?.status === 400) {
+          const yearText = isDebt ? 'năm trước' : 'năm này';
+          setError(`Đã có thanh toán phí vệ sinh cho ${yearText}. Vui lòng kiểm tra lại trong danh sách thanh toán.`);
+          
+          setTimeout(() => {
+            navigate(`/payments?household=${household._id}`);
+          }, 2000);
+        } else {
+          setError(
+            error.response && error.response.data.message
+              ? error.response.data.message
+              : 'Có lỗi xảy ra khi tạo thanh toán phí vệ sinh'
           );
         }
       } finally {
@@ -1109,7 +1243,7 @@ const HouseholdDetailScreen = () => {
                       onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}>
                         <div className="d-flex align-items-center justify-content-between mb-3">
                           <h6 className="mb-0 fw-bold text-dark">{fee.name}</h6>
-                          <i className={`bi ${fee.feeType === 'vehicle' ? 'bi-car-front' : fee.feeType === 'area-based' ? 'bi-building' : 'bi-cash-coin'} text-success`} style={{ fontSize: '1.2rem' }}></i>
+                          <i className={`bi ${fee.feeType === 'vehicle' ? 'bi-car-front' : fee.feeType === 'area-based' ? 'bi-building' : fee.feeType === 'hygiene' ? 'bi-droplet' : 'bi-cash-coin'} text-success`} style={{ fontSize: '1.2rem' }}></i>
                         </div>
                         
                         <div className="mb-3">
@@ -1144,15 +1278,36 @@ const HouseholdDetailScreen = () => {
                               ))}
                             </div>
                           )}
+                          
+                          {/* Hiển thị chi tiết phí vệ sinh nếu có */}
+                          {fee.hygieneDetails && fee.hygieneDetails.length > 0 && (
+                            <div className="mt-2">
+                              <div className="text-muted small mb-1">Chi tiết phí vệ sinh</div>
+                              <div className="small text-dark">
+                                • Số nhân khẩu: {fee.residentCount} người
+                              </div>
+                              <div className="small text-dark">
+                                • Định mức: 6.000 VND/tháng/người
+                              </div>
+                              <div className="small text-dark">
+                                • Tính năm: {fee.residentCount} × 6.000 × 12 tháng = {fee.amount.toLocaleString('vi-VN')} VND
+                              </div>
+                              {fee.residents && (
+                                <div className="small text-muted mt-1">
+                                  Cư dân: {fee.residents.map(r => r.name).join(', ')}
+                                </div>
+                              )}
+                            </div>
+                          )}
                         </div>
                         
                         <div className="row g-2 mb-3">
                           <div className="col-12">
-                            <div className="text-muted small">Tháng hiện tại</div>
+                            <div className="text-muted small">{fee.paymentCycle === 'yearly' ? 'Năm hiện tại' : 'Tháng hiện tại'}</div>
                             {getStatusBadge(fee.currentMonthStatus)}
                           </div>
                           <div className="col-12">
-                            <div className="text-muted small">Tháng trước</div>
+                            <div className="text-muted small">{fee.paymentCycle === 'yearly' ? 'Năm trước' : 'Tháng trước'}</div>
                             <div className="d-flex align-items-center gap-2">
                               {getStatusBadge(fee.lastMonthStatus)}
                               {fee.lastMonthStatus === 'overdue' && (
@@ -1168,10 +1323,10 @@ const HouseholdDetailScreen = () => {
                               variant="success" 
                               size="sm"
                               className="rounded-pill flex-grow-1"
-                              onClick={() => handleCreatePayment(fee._id, false, fee.isVehicleFee, fee.isAreaFee)}
+                              onClick={() => handleCreatePayment(fee._id, false, fee.isVehicleFee, fee.isAreaFee, fee.isHygieneFee)}
                             >
-                              <i className={`bi ${fee.isVehicleFee ? 'bi-car-front' : fee.isAreaFee ? 'bi-building' : 'bi-credit-card'} me-1`}></i> 
-                              {fee.isVehicleFee ? 'Thanh toán phí xe' : fee.isAreaFee ? 'Thanh toán phí dịch vụ & chung cư' : 'Thanh toán'}
+                              <i className={`bi ${fee.isVehicleFee ? 'bi-car-front' : fee.isAreaFee ? 'bi-building' : fee.isHygieneFee ? 'bi-droplet' : 'bi-credit-card'} me-1`}></i> 
+                              {fee.isVehicleFee ? 'Thanh toán phí xe' : fee.isAreaFee ? 'Thanh toán phí dịch vụ & chung cư' : fee.isHygieneFee ? 'Thanh toán phí vệ sinh' : 'Thanh toán'}
                             </Button>
                           )}
                           {fee.lastMonthStatus === 'overdue' && (
@@ -1179,9 +1334,9 @@ const HouseholdDetailScreen = () => {
                               variant="warning" 
                               size="sm"
                               className="rounded-pill flex-grow-1"
-                              onClick={() => handleCreatePayment(fee._id, true, fee.isVehicleFee, fee.isAreaFee)}
+                              onClick={() => handleCreatePayment(fee._id, true, fee.isVehicleFee, fee.isAreaFee, fee.isHygieneFee)}
                             >
-                              <i className="bi bi-exclamation-triangle me-1"></i> Trả nợ
+                              <i className="bi bi-exclamation-triangle me-1"></i> {fee.paymentCycle === 'yearly' ? 'Trả nợ năm trước' : 'Trả nợ'}
                             </Button>
                           )}
                           {/* Hiển thị thông báo nếu tháng trước đã thanh toán */}
