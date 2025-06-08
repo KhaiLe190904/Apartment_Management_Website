@@ -107,6 +107,12 @@ const Header = () => {
                     </Nav.Link>
                   </LinkContainer>
                   
+                  <LinkContainer to="/facilities">
+                    <Nav.Link className="nav-link-custom">
+                      <i className="bi bi-gear me-1"></i> Tiện ích
+                    </Nav.Link>
+                  </LinkContainer>
+                  
                   <NavDropdown
                     title={
                       <>

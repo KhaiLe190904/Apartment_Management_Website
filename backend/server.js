@@ -47,6 +47,7 @@ app.use('/api/vehicles', require('./routes/vehicleRoutes'));
 app.use('/api/vehicle-fees', require('./routes/vehicleFeeRoutes'));
 app.use('/api/area-fees', require('./routes/areaBasedFeeRoutes'));
 app.use('/api/hygiene-fees', require('./routes/hygieneFeeRoutes'));
+app.use('/api/facilities', require('./routes/facilityRoutes'));
 app.use('/api/statistics', require('./routes/statisticRoutes'));
 
 // Base route for API testing

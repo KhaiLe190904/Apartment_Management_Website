@@ -25,6 +25,9 @@ import VehicleListScreen from './screens/VehicleListScreen';
 import VehicleEditScreen from './screens/VehicleEditScreen';
 import VehicleFeeScreen from './screens/VehicleFeeScreen';
 import AreaBasedFeeScreen from './screens/AreaBasedFeeScreen';
+import FacilityListScreen from './screens/FacilityListScreen';
+import FacilityFormScreen from './screens/FacilityFormScreen';
+import FacilityMaintenanceScreen from './screens/FacilityMaintenanceScreen';
 
 import NotFoundScreen from './screens/NotFoundScreen';
 
@@ -68,6 +71,9 @@ function App() {
                 <Route path="/vehicles/create" element={<VehicleEditScreen />} />
                 <Route path="/vehicle-fees" element={<VehicleFeeScreen />} />
                 <Route path="/area-fees" element={<AreaBasedFeeScreen />} />
+                
+                <Route path="/facilities" element={<FacilityListScreen />} />
+                <Route path="/facilities/:id" element={<FacilityFormScreen />} />
               </Route>
               
               {/* Routes accessible only to managers and admins */}
@@ -79,6 +85,8 @@ function App() {
                 <Route path="/fees/:id" element={<FeeEditScreen />} />
                 <Route path="/payments/:id/edit" element={<PaymentEditScreen />} />
                 <Route path="/vehicles/:id/edit" element={<VehicleEditScreen />} />
+                <Route path="/facilities/new" element={<FacilityFormScreen />} />
+                <Route path="/facilities/:id/maintenance" element={<FacilityMaintenanceScreen />} />
                 <Route path="/admin/reports" element={<DashboardScreen />} />
               </Route>
               
