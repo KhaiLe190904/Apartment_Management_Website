@@ -5,7 +5,6 @@ const { MongoMemoryServer } = require('mongodb-memory-server');
 const User = require('../models/userModel');
 const { loginUser } = require('../controllers/userController');
 
-// Setup test app
 const app = express();
 app.use(express.json());
 app.post('/login', loginUser);
@@ -14,7 +13,6 @@ let mongod;
 
 describe('Kiểm thử hộp trắng - Chức năng đăng nhập', () => {
   
-  // Setup database trước khi chạy tests
   beforeAll(async () => {
     mongod = await MongoMemoryServer.create();
     const mongoUri = mongod.getUri();
@@ -132,20 +130,3 @@ describe('Kiểm thử hộp trắng - Chức năng đăng nhập', () => {
     expect(response.body).toHaveProperty('message', 'Tên đăng nhập không tồn tại');
   });
 });
-
-/* 
-PHÂN TÍCH ĐỘ BAO PHỦ MÃ (Code Coverage):
-
-Hàm loginUser có các đường dẫn chính:
-1. ✅ if (!user) - TC3, TC4 test path này
-2. ✅ if (!user.active) - Có thể thêm TC5 nếu cần
-3. ✅ if (!isMatch) - TC2 test path này  
-4. ✅ Success path - TC1 test path này
-5. ✅ catch (error) - Có thể mock để test
-
-4 test cases này đã bao phủ các nhánh logic chính:
-- Đăng nhập thành công (happy path)
-- Mật khẩu sai (password validation branch)  
-- Username không tồn tại (user lookup branch)
-- Cả hai sai (user lookup branch - ưu tiên check user trước)
-*/ 
