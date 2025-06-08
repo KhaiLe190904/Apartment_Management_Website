@@ -97,7 +97,16 @@ const HouseholdDetailScreen = () => {
     setShowHeadModal(true);
   };
 
-  const handleCreatePayment = async (feeId, isDebt = false, isVehicleFee = false) => {
+  const handleCreatePayment = async (feeId, isDebt = false, isVehicleFee = false, isAreaFee = false) => {
+    console.log('🎯 Debug - handleCreatePayment được gọi với:', {
+      feeId,
+      isDebt,
+      isVehicleFee,
+      isAreaFee,
+      householdId: household._id,
+      apartmentNumber: household.apartmentNumber
+    });
+    
     if (isVehicleFee) {
       // Xử lý tự động tạo thanh toán cho phí xe
       try {
@@ -333,6 +342,236 @@ const HouseholdDetailScreen = () => {
           setError(
             error.response?.data?.message || 
             'Có lỗi xảy ra khi tạo thanh toán phí xe'
+          );
+        }
+      } finally {
+        setLoading(false);
+      }
+    } else if (isAreaFee) {
+      // Xử lý tự động tạo thanh toán cho phí dịch vụ & chung cư
+      try {
+        setLoading(true);
+        
+        const config = {
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${userInfo.token}`,
+          },
+        };
+        
+        // Tính phí theo diện tích cho hộ gia đình
+        const areaFeeResponse = await axios.get(`/api/area-fees/calculate/${household._id}`, config);
+        const areaFeeData = areaFeeResponse.data.data;
+        
+        console.log('🏢 Debug - Dữ liệu phí theo diện tích từ API:', {
+          householdId: household._id,
+          apartmentNumber: household.apartmentNumber,
+          area: areaFeeData.area,
+          totalAmount: areaFeeData.totalAmount,
+          feeDetails: areaFeeData.feeDetails,
+          rawResponse: areaFeeResponse.data
+        });
+
+        // Kiểm tra từng feeDetail có hợp lệ không
+        areaFeeData.feeDetails.forEach((detail, index) => {
+          console.log(`🔍 Debug - FeeDetail ${index + 1}:`, {
+            feeCode: detail.feeCode,
+            feeName: detail.feeName,
+            feeId: detail.feeId,
+            unitPrice: detail.unitPrice,
+            area: detail.area,
+            amount: detail.amount,
+            feeIdType: typeof detail.feeId,
+            feeIdValid: detail.feeId && detail.feeId.toString().length === 24
+          });
+        });
+        
+        if (areaFeeData.totalAmount <= 0) {
+          setError('Hộ gia đình này không có diện tích hoặc không có phí theo diện tích');
+          return;
+        }
+        
+        // Xác định period dựa trên isDebt
+        let period;
+        let notePrefix = 'Phí dịch vụ & chung cư';
+        
+        const today = new Date();
+        let targetYear, targetMonth;
+        
+        if (isDebt) {
+          // Tháng trước cho trả nợ
+          targetMonth = today.getMonth() === 0 ? 11 : today.getMonth() - 1;
+          targetYear = today.getMonth() === 0 ? today.getFullYear() - 1 : today.getFullYear();
+          notePrefix = 'Trả nợ phí dịch vụ & chung cư';
+        } else {
+          // Tháng hiện tại cho thanh toán bình thường
+          targetMonth = today.getMonth();
+          targetYear = today.getFullYear();
+        }
+        
+        // Tạo period với format consistent
+        period = new Date(targetYear, targetMonth, 1).toISOString();
+        
+        console.log('🏢 Debug - Tạo thanh toán phí diện tích:', { 
+          targetYear, 
+          targetMonth, 
+          period, 
+          isDebt,
+          totalAmount: areaFeeData.totalAmount,
+          area: areaFeeData.area
+        });
+        
+        // Tạo thanh toán cho từng loại phí (PHI006, PHI007)
+        const createdPayments = [];
+        const failedPayments = [];
+        
+        for (const feeDetail of areaFeeData.feeDetails) {
+          // Validate feeDetail trước khi tạo payment
+          if (!feeDetail.feeId) {
+            console.error(`❌ FeeDetail thiếu feeId:`, feeDetail);
+            failedPayments.push({
+              feeName: feeDetail.feeName,
+              reason: 'Thiếu feeId'
+            });
+            continue;
+          }
+
+          if (!feeDetail.amount || feeDetail.amount <= 0) {
+            console.error(`❌ FeeDetail có amount không hợp lệ:`, feeDetail);
+            failedPayments.push({
+              feeName: feeDetail.feeName,
+              reason: 'Amount không hợp lệ'
+            });
+            continue;
+          }
+
+          const paymentData = {
+            household: household._id,
+            fee: feeDetail.feeId,
+            amount: feeDetail.amount,
+            paymentDate: new Date().toISOString(),
+            payerName: household.householdHead?.fullName || 'Chủ hộ',
+            payerId: household.householdHead?.idCard || '',
+            payerPhone: household.householdHead?.phoneNumber || '',
+            receiptNumber: `AF${Date.now()}_${feeDetail.feeCode}`, // Area Fee receipt
+            note: `${notePrefix} - ${feeDetail.feeName}: ${areaFeeData.area}m² × ${feeDetail.unitPrice.toLocaleString('vi-VN')} VND/m²`,
+            period: period,
+            method: 'cash',
+            status: 'paid'
+          };
+          
+          console.log('🏢 Debug - Tạo thanh toán cho phí:', {
+            feeCode: feeDetail.feeCode,
+            feeName: feeDetail.feeName,
+            amount: feeDetail.amount,
+            period: period,
+            paymentData
+          });
+
+          // Kiểm tra thanh toán đã tồn tại trước khi tạo
+          try {
+            const existingPaymentCheck = await axios.get(`/api/payments/household/${household._id}`, config);
+            const existingPayments = existingPaymentCheck.data;
+            
+            const conflictingPayment = existingPayments.find(payment => {
+              const sameFee = payment.fee._id === feeDetail.feeId;
+              const samePeriod = payment.period && new Date(payment.period).getMonth() === new Date(period).getMonth() && 
+                                 new Date(payment.period).getFullYear() === new Date(period).getFullYear();
+              return sameFee && samePeriod;
+            });
+
+            if (conflictingPayment) {
+              console.log(`⚠️  Thanh toán ${feeDetail.feeName} đã tồn tại:`, conflictingPayment);
+              failedPayments.push({
+                feeName: feeDetail.feeName,
+                reason: 'Đã tồn tại'
+              });
+              continue;
+            }
+          } catch (checkError) {
+            console.log('⚠️  Không thể kiểm tra thanh toán đã tồn tại:', checkError.message);
+          }
+          
+          try {
+            const createPaymentResponse = await axios.post('/api/payments', paymentData, config);
+            createdPayments.push(createPaymentResponse.data);
+            console.log(`✅ Tạo thành công payment cho ${feeDetail.feeName}`, createPaymentResponse.data);
+          } catch (paymentError) {
+            console.error(`❌ Lỗi tạo payment cho ${feeDetail.feeName}:`, {
+              error: paymentError,
+              response: paymentError.response?.data,
+              status: paymentError.response?.status,
+              paymentData
+            });
+            
+            // Kiểm tra nếu là lỗi thanh toán đã tồn tại
+            if (paymentError.response?.data?.message?.includes('already exists') || 
+                (paymentError.response?.status === 400 && paymentError.response?.data?.message?.includes('đã tồn tại'))) {
+              console.log(`⚠️  Thanh toán ${feeDetail.feeName} đã tồn tại, bỏ qua...`);
+              failedPayments.push({
+                feeName: feeDetail.feeName,
+                reason: 'Đã tồn tại'
+              });
+              continue; // Tiếp tục với phí tiếp theo
+            } else {
+              // Ghi lại lỗi nhưng không throw để tiếp tục tạo thanh toán khác
+              failedPayments.push({
+                feeName: feeDetail.feeName,
+                reason: paymentError.response?.data?.message || paymentError.message
+              });
+              console.log(`🔄 Tiếp tục tạo thanh toán khác sau lỗi ${feeDetail.feeName}`);
+            }
+          }
+        }
+        
+        console.log('✅ Debug - Hoàn thành tạo payments phí diện tích:', {
+          totalCreated: createdPayments.length,
+          totalFees: areaFeeData.feeDetails.length,
+          createdPayments,
+          failedPayments
+        });
+        
+        // Xử lý thông báo dựa trên kết quả
+        let message;
+        if (createdPayments.length === areaFeeData.feeDetails.length) {
+          // Tất cả thanh toán được tạo thành công
+          message = isDebt ? 
+            'Trả nợ phí dịch vụ & chung cư đã được tạo thành công!' : 
+            'Thanh toán phí dịch vụ & chung cư đã được tạo thành công!';
+        } else if (createdPayments.length > 0) {
+          // Một số thanh toán được tạo thành công
+          const successFees = createdPayments.map(p => p.fee?.name || 'Unknown').join(', ');
+          const failedFees = failedPayments.map(f => f.feeName).join(', ');
+          message = `Đã tạo thành công: ${successFees}. ${failedFees ? `Lỗi: ${failedFees}` : ''}`;
+        } else {
+          // Không có thanh toán nào được tạo thành công
+          const failures = failedPayments.map(f => `${f.feeName}: ${f.reason}`).join(', ');
+          throw new Error(`Không thể tạo thanh toán nào. ${failures}`);
+        }
+        
+        // Chuyển hướng đến trang danh sách thanh toán với thông báo thành công
+        navigate('/payments', { 
+          state: { message }
+        });
+        
+      } catch (error) {
+        console.error('🔥 Debug - Lỗi tạo thanh toán phí dịch vụ & chung cư:', error);
+        
+        // Xử lý lỗi thanh toán đã tồn tại
+        if (error.response?.data?.message?.includes('already exists') || 
+            error.response?.status === 400) {
+          const periodText = isDebt ? 'tháng trước' : 'tháng này';
+          setError(`Đã có thanh toán phí dịch vụ & chung cư cho ${periodText}. Vui lòng kiểm tra lại trong danh sách thanh toán.`);
+          
+          // Chuyển đến trang payments sau 2 giây
+          setTimeout(() => {
+            navigate(`/payments?household=${household._id}`);
+          }, 2000);
+        } else {
+          setError(
+            error.response && error.response.data.message
+              ? error.response.data.message
+              : 'Có lỗi xảy ra khi tạo thanh toán phí dịch vụ & chung cư'
           );
         }
       } finally {
@@ -870,7 +1109,7 @@ const HouseholdDetailScreen = () => {
                       onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}>
                         <div className="d-flex align-items-center justify-content-between mb-3">
                           <h6 className="mb-0 fw-bold text-dark">{fee.name}</h6>
-                          <i className={`bi ${fee.feeType === 'vehicle' ? 'bi-car-front' : 'bi-cash-coin'} text-success`} style={{ fontSize: '1.2rem' }}></i>
+                          <i className={`bi ${fee.feeType === 'vehicle' ? 'bi-car-front' : fee.feeType === 'area-based' ? 'bi-building' : 'bi-cash-coin'} text-success`} style={{ fontSize: '1.2rem' }}></i>
                         </div>
                         
                         <div className="mb-3">
@@ -886,6 +1125,21 @@ const HouseholdDetailScreen = () => {
                               {fee.vehicleDetails.map((detail, idx) => (
                                 <div key={idx} className="small text-dark">
                                   • {detail.count} {detail.vehicleType}: {detail.amount.toLocaleString('vi-VN')} VND
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                          
+                          {/* Hiển thị chi tiết phí theo diện tích nếu có */}
+                          {fee.areaDetails && fee.areaDetails.length > 0 && (
+                            <div className="mt-2">
+                              <div className="text-muted small mb-1">Chi tiết phí theo diện tích</div>
+                              <div className="small text-dark">
+                                • Diện tích: {fee.area} m²
+                              </div>
+                              {fee.areaDetails.map((detail, idx) => (
+                                <div key={idx} className="small text-dark">
+                                  • {detail.feeName}: {detail.unitPrice.toLocaleString('vi-VN')} VND/m² = {detail.amount.toLocaleString('vi-VN')} VND
                                 </div>
                               ))}
                             </div>
@@ -914,10 +1168,10 @@ const HouseholdDetailScreen = () => {
                               variant="success" 
                               size="sm"
                               className="rounded-pill flex-grow-1"
-                              onClick={() => handleCreatePayment(fee._id, false, fee.isVehicleFee)}
+                              onClick={() => handleCreatePayment(fee._id, false, fee.isVehicleFee, fee.isAreaFee)}
                             >
-                              <i className={`bi ${fee.isVehicleFee ? 'bi-car-front' : 'bi-credit-card'} me-1`}></i> 
-                              {fee.isVehicleFee ? 'Thanh toán phí xe' : 'Thanh toán'}
+                              <i className={`bi ${fee.isVehicleFee ? 'bi-car-front' : fee.isAreaFee ? 'bi-building' : 'bi-credit-card'} me-1`}></i> 
+                              {fee.isVehicleFee ? 'Thanh toán phí xe' : fee.isAreaFee ? 'Thanh toán phí dịch vụ & chung cư' : 'Thanh toán'}
                             </Button>
                           )}
                           {fee.lastMonthStatus === 'overdue' && (
@@ -925,7 +1179,7 @@ const HouseholdDetailScreen = () => {
                               variant="warning" 
                               size="sm"
                               className="rounded-pill flex-grow-1"
-                              onClick={() => handleCreatePayment(fee._id, true, fee.isVehicleFee)}
+                              onClick={() => handleCreatePayment(fee._id, true, fee.isVehicleFee, fee.isAreaFee)}
                             >
                               <i className="bi bi-exclamation-triangle me-1"></i> Trả nợ
                             </Button>
