@@ -42,16 +42,15 @@ const Header = () => {
       >
         <Container fluid>
           <LinkContainer to={userInfo ? '/dashboard' : '/'}>
-            <Navbar.Brand className="d-flex align-items-center gap-2 fw-bold fs-4 text-dark">
+            <Navbar.Brand className="d-flex align-items-center gap-2 fw-bold fs-4 text-white">
               <div className="d-inline-flex align-items-center justify-content-center bg-white bg-opacity-90 rounded-circle shadow-sm" style={{width: 48, height: 48, padding: '2px'}}>
                 <img 
-                  src="/logo.png" 
+                  src="/logo.svg" 
                   alt="BlueMoon Logo" 
                   style={{
                     width: '40px', 
-                    height: '40px', 
-                    borderRadius: '50%',
-                    objectFit: 'cover'
+                    height: '40px',
+                    objectFit: 'contain'
                   }}
                   onError={(e) => {
                     // Fallback to icon if logo not found
@@ -60,7 +59,7 @@ const Header = () => {
                   }}
                 />
                 <i 
-                  className="bi bi-building text-primary" 
+                  className="bi bi-building text-white" 
                   style={{
                     fontSize: 28, 
                     display: 'none'
@@ -68,10 +67,10 @@ const Header = () => {
                 ></i>
               </div>
               <div className="d-flex flex-column">
-                <span className="ms-2" style={{letterSpacing: 1, fontSize: '1.3rem', lineHeight: '1.2'}}>
+                <span className="ms-2 text-white" style={{letterSpacing: 1, fontSize: '1.3rem', lineHeight: '1.2'}}>
                   Chung Cư BlueMoon
                 </span>
-                <span className="ms-2 text-muted" style={{fontSize: '0.75rem', fontWeight: 'normal'}}>
+                <span className="ms-2 text-white-50" style={{fontSize: '0.75rem', fontWeight: 'normal'}}>
                   Apartment Management System
                 </span>
               </div>
@@ -161,8 +160,8 @@ const Header = () => {
                         <span className="d-inline-flex align-items-center justify-content-center bg-primary text-white rounded-circle" style={{width: 36, height: 36, fontWeight: 700, fontSize: 18}}>
                           {getInitial(userInfo.name || userInfo.username)}
                         </span>
-                        <span className="fw-bold">{userInfo.name || userInfo.username}</span>
-                        <span className="text-muted small">({formatUserRole(userInfo.role)})</span>
+                        <span className="fw-bold text-white">{userInfo.name || userInfo.username}</span>
+                        <span className="text-white-50 small">({formatUserRole(userInfo.role)})</span>
                       </span>
                     }
                     id="username"
