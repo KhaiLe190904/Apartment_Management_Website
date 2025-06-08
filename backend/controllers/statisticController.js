@@ -330,7 +330,9 @@ const translateFeeName = (feeName) => {
     'Phí điện': 'Điện',
     'Phí nước': 'Nước',
     'Phí internet': 'Internet',
-    'Phí cable TV': 'Cable TV'
+    'Phí cable TV': 'Cable TV',
+    'Phí dịch vụ chung cư': 'Dịch vụ chung cư',
+    'Phí quản lý chung cư': 'Quản lý chung cư'
   };
   
   return feeTranslations[feeName] || feeName;
@@ -463,4 +465,34 @@ const getMonthlyPaymentStats = asyncHandler(async (req, res) => {
   }));
 
   res.json(monthlyStats);
-}); 
+});
+
+// Get area-based fee statistics
+const getAreaBasedFeeStats = asyncHandler(async (req, res) => {
+  try {
+    const areaBasedFeeService = require('../services/areaBasedFeeService');
+    const statistics = await areaBasedFeeService.getAreaBasedFeeStatistics();
+    
+    res.json({
+      success: true,
+      data: statistics
+    });
+  } catch (error) {
+    console.error('Error getting area-based fee statistics:', error);
+    res.status(500).json({ 
+      success: false,
+      message: 'Lỗi khi lấy thống kê phí theo diện tích' 
+    });
+  }
+});
+
+module.exports = {
+  getDashboardStats: exports.getDashboardStats,
+  getPaymentStatus: exports.getPaymentStatus,
+  getMonthlyReport: exports.getMonthlyReport,
+  getTotalPaymentsByMonth,
+  getPaymentStatsByMethod,
+  getPaymentStatsByFeeType,
+  getMonthlyPaymentStats,
+  getAreaBasedFeeStats
+}; 

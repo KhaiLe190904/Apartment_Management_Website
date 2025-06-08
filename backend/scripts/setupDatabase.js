@@ -990,6 +990,24 @@ async function createFees() {
         description: 'Phí gửi xe đạp, xe điện và các loại xe khác hàng tháng',
         startDate: new Date('2023-01-01'),
         active: true
+      },
+      {
+        feeCode: 'PHI006',
+        name: 'Phí dịch vụ chung cư',
+        amount: 5000,
+        feeType: 'mandatory',
+        description: 'Phí dịch vụ chung cư tính theo diện tích căn hộ - 5,000 VND/m²/tháng',
+        startDate: new Date('2024-01-01'),
+        active: true
+      },
+      {
+        feeCode: 'PHI007',
+        name: 'Phí quản lý chung cư',
+        amount: 7000,
+        feeType: 'mandatory',
+        description: 'Phí quản lý chung cư tính theo diện tích căn hộ - 7,000 VND/m²/tháng',
+        startDate: new Date('2024-01-01'),
+        active: true
       }
     ];
     

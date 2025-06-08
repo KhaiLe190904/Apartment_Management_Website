@@ -269,7 +269,7 @@ const HouseholdListScreen = () => {
                       <th className="fw-bold py-3 border-0" style={{ color: '#2d3748' }}>
                         <i className="bi bi-person-badge me-2"></i>Chủ Hộ
                       </th>
-                      <th className="fw-bold text-center py-3 border-0" style={{ color: '#2d3748' }}>
+                      <th className="fw-bold text-center py-3 border-0" style={{ color: '#2d3748', minWidth: '130px' }}>
                         <i className="bi bi-activity me-2"></i>Trạng Thái
                       </th>
                       <th className="fw-bold text-center py-3 border-0" style={{ color: '#2d3748' }}>
@@ -327,24 +327,63 @@ const HouseholdListScreen = () => {
                           {household.householdHead ? (
                             <div className="d-flex align-items-center">
                               <div style={{
-                                width: '35px',
-                                height: '35px',
+                                width: '40px',
+                                height: '40px',
                                 background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
                                 borderRadius: '50%',
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'center',
-                                marginRight: '10px',
-                                boxShadow: '0 3px 10px rgba(102, 126, 234, 0.3)'
+                                marginRight: '12px',
+                                boxShadow: '0 4px 12px rgba(102, 126, 234, 0.3)',
+                                position: 'relative'
                               }}>
-                                <i className="bi bi-person-fill text-white"></i>
+                                <i className="bi bi-person-fill text-white" style={{ fontSize: '1.1rem' }}></i>
+                                <div style={{
+                                  position: 'absolute',
+                                  top: '-2px',
+                                  right: '-2px',
+                                  width: '16px',
+                                  height: '16px',
+                                  background: 'linear-gradient(135deg, #ffd700 0%, #ffb347 100%)',
+                                  borderRadius: '50%',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  border: '2px solid white'
+                                }}>
+                                  <i className="bi bi-crown-fill" style={{ fontSize: '8px', color: '#fff' }}></i>
+                                </div>
                               </div>
-                              <span className="fw-semibold text-dark">{household.householdHead.fullName}</span>
+                              <div>
+                                <div className="fw-semibold text-dark">{household.householdHead.fullName}</div>
+                                <small className="text-muted">
+                                  <i className="bi bi-shield-check me-1"></i>Chủ hộ
+                                </small>
+                              </div>
                             </div>
                           ) : (
-                            <span className="text-muted fst-italic d-flex align-items-center">
-                              <i className="bi bi-person-dash me-2"></i>Chưa Gán
-                            </span>
+                            <div className="d-flex align-items-center">
+                              <div style={{
+                                width: '40px',
+                                height: '40px',
+                                background: 'linear-gradient(135deg, #95a5a6 0%, #7f8c8d 100%)',
+                                borderRadius: '50%',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                marginRight: '12px',
+                                boxShadow: '0 3px 8px rgba(149, 165, 166, 0.3)'
+                              }}>
+                                <i className="bi bi-person-dash text-white" style={{ fontSize: '1.1rem' }}></i>
+                              </div>
+                              <div>
+                                <div className="text-muted fw-medium">Chưa có chủ hộ</div>
+                                <small className="text-warning">
+                                  <i className="bi bi-exclamation-triangle me-1"></i>Cần chỉ định
+                                </small>
+                              </div>
+                            </div>
                           )}
                         </td>
                         <td className="text-center align-middle py-3">
@@ -352,11 +391,14 @@ const HouseholdListScreen = () => {
                             <span style={{
                               background: 'linear-gradient(135deg, #00b894 0%, #00a085 100%)',
                               color: 'white',
-                              padding: '6px 16px',
-                              borderRadius: '20px',
-                              fontSize: '14px',
+                              padding: '8px 20px',
+                              borderRadius: '25px',
+                              fontSize: '13px',
                               fontWeight: '600',
-                              boxShadow: '0 3px 10px rgba(0, 184, 148, 0.3)'
+                              boxShadow: '0 3px 10px rgba(0, 184, 148, 0.3)',
+                              display: 'inline-block',
+                              minWidth: '110px',
+                              whiteSpace: 'nowrap'
                             }}>
                               <i className="bi bi-check-circle me-1"></i>Hoạt Động
                             </span>
@@ -364,11 +406,14 @@ const HouseholdListScreen = () => {
                             <span style={{
                               background: 'linear-gradient(135deg, #e17055 0%, #d63031 100%)',
                               color: 'white',
-                              padding: '6px 16px',
-                              borderRadius: '20px',
-                              fontSize: '14px',
+                              padding: '8px 20px',
+                              borderRadius: '25px',
+                              fontSize: '13px',
                               fontWeight: '600',
-                              boxShadow: '0 3px 10px rgba(225, 112, 85, 0.3)'
+                              boxShadow: '0 3px 10px rgba(225, 112, 85, 0.3)',
+                              display: 'inline-block',
+                              minWidth: '110px',
+                              whiteSpace: 'nowrap'
                             }}>
                               <i className="bi bi-x-circle me-1"></i>Tạm Ngưng
                             </span>

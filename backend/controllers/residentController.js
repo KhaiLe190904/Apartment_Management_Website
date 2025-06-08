@@ -104,6 +104,16 @@ exports.createResident = async (req, res) => {
       household,
       note
     });
+
+    // Auto-assign as household head if this is the first resident and no head exists
+    if (household) {
+      const householdDoc = await Household.findById(household);
+      if (householdDoc && !householdDoc.householdHead) {
+        householdDoc.householdHead = resident._id;
+        await householdDoc.save();
+        console.log(`Auto-assigned ${resident.fullName} as head of household ${householdDoc.apartmentNumber}`);
+      }
+    }
     
     res.status(201).json(resident);
   } catch (error) {
@@ -175,11 +185,24 @@ exports.deleteResident = async (req, res) => {
       return res.status(404).json({ message: 'Resident not found' });
     }
     
-    // If this resident is a household head, remove that reference
+    // If this resident is a household head, auto-assign a new head or remove reference
     if (resident.household) {
       const household = await Household.findById(resident.household);
       if (household && household.householdHead?.toString() === resident._id.toString()) {
-        household.householdHead = null;
+        // Find another resident in the same household to be the new head
+        const otherResident = await Resident.findOne({ 
+          household: resident.household, 
+          _id: { $ne: resident._id } 
+        });
+        
+        if (otherResident) {
+          household.householdHead = otherResident._id;
+          console.log(`Auto-assigned ${otherResident.fullName} as new head of household ${household.apartmentNumber}`);
+        } else {
+          household.householdHead = null;
+          console.log(`Removed household head for household ${household.apartmentNumber} (no other residents)`);
+        }
+        
         await household.save();
       }
     }

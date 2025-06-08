@@ -20,7 +20,7 @@ exports.getHouseholds = async (req, res) => {
 exports.getHouseholdById = async (req, res) => {
   try {
     const household = await Household.findById(req.params.id)
-      .populate('householdHead', 'fullName dateOfBirth gender idCard');
+      .populate('householdHead', 'fullName dateOfBirth gender idCard phone');
     
     if (!household) {
       return res.status(404).json({ message: 'Household not found' });

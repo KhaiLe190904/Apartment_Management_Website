@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { Row, Col, Card, Button, ListGroup, Table, Alert, Badge } from 'react-bootstrap';
+import { Row, Col, Card, Button, ListGroup, Table, Alert, Badge, Modal, Form } from 'react-bootstrap';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import Message from '../components/Message';
 import Loader from '../components/Loader';
@@ -16,6 +16,8 @@ const HouseholdDetailScreen = () => {
   const [feeStatus, setFeeStatus] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [showHeadModal, setShowHeadModal] = useState(false);
+  const [selectedHead, setSelectedHead] = useState('');
   
   const { userInfo } = useContext(AuthContext);
   
@@ -60,6 +62,39 @@ const HouseholdDetailScreen = () => {
   
   const handleAddResident = () => {
     navigate(`/residents/create?household=${household._id}`);
+  };
+
+  const handleUpdateHead = async () => {
+    try {
+      setLoading(true);
+      const config = {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${userInfo.token}`,
+        },
+      };
+
+      await axios.put(`/api/households/${household._id}`, 
+        { householdHead: selectedHead },
+        config
+      );
+
+      setShowHeadModal(false);
+      fetchHouseholdData(); // Refresh data
+    } catch (error) {
+      setError(
+        error.response && error.response.data.message
+          ? error.response.data.message
+          : 'Không thể cập nhật chủ hộ'
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const openHeadModal = () => {
+    setSelectedHead(household.householdHead?._id || '');
+    setShowHeadModal(true);
   };
 
   const handleCreatePayment = async (feeId, isDebt = false, isVehicleFee = false) => {
@@ -292,6 +327,83 @@ const HouseholdDetailScreen = () => {
                   </Link>
                 </Col>
               </Row>
+
+              {/* Household Head Section */}
+              <Row className="mt-4">
+                <Col>
+                  <div style={{
+                    background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+                    borderRadius: '20px',
+                    padding: '25px',
+                    color: 'white',
+                    boxShadow: '0 10px 30px rgba(240, 147, 251, 0.3)'
+                  }}>
+                    <div className="d-flex justify-content-between align-items-center">
+                      <div className="d-flex align-items-center">
+                        <div style={{
+                          width: '70px',
+                          height: '70px',
+                          background: 'rgba(255,255,255,0.2)',
+                          borderRadius: '50%',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          marginRight: '20px'
+                        }}>
+                          <i className="bi bi-crown-fill" style={{ fontSize: '2rem' }}></i>
+                        </div>
+                        <div>
+                          <h4 className="mb-1 fw-bold">Chủ căn hộ</h4>
+                          {household.householdHead ? (
+                            <>
+                              <h5 className="mb-1">{household.householdHead.fullName}</h5>
+                              <div className="opacity-75">
+                                <i className={`bi ${household.householdHead.gender === 'male' ? 'bi-gender-male' : 'bi-gender-female'} me-2`}></i>
+                                {household.householdHead.gender === 'male' ? 'Nam' : 'Nữ'}
+                                {household.householdHead.phone && (
+                                  <>
+                                    <span className="mx-2">•</span>
+                                    <i className="bi bi-telephone me-1"></i>
+                                    {household.householdHead.phone}
+                                  </>
+                                )}
+                              </div>
+                              {household.householdHead.idCard && (
+                                <div className="opacity-75 mt-1">
+                                  <i className="bi bi-credit-card-2-front me-1"></i>
+                                  {household.householdHead.idCard}
+                                </div>
+                              )}
+                            </>
+                          ) : (
+                            <>
+                              <p className="mb-1 opacity-75">Chưa có chủ hộ</p>
+                              <small className="opacity-50">Hãy thêm cư dân và chỉ định chủ hộ</small>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                                             <div className="d-flex gap-2">
+                         {household.householdHead && (
+                           <Link to={`/residents/${household.householdHead._id}/edit`}>
+                             <Button variant="light" className="rounded-pill px-3 py-2">
+                               <i className="bi bi-pencil me-1"></i> Sửa thông tin
+                             </Button>
+                           </Link>
+                         )}
+                         <Button 
+                           variant="outline-light" 
+                           className="rounded-pill px-3 py-2"
+                           onClick={openHeadModal}
+                         >
+                           <i className="bi bi-person-check me-1"></i> 
+                           {household.householdHead ? 'Đổi chủ hộ' : 'Chọn chủ hộ'}
+                         </Button>
+                       </div>
+                    </div>
+                  </div>
+                </Col>
+              </Row>
             </div>
           </div>
 
@@ -368,6 +480,25 @@ const HouseholdDetailScreen = () => {
                                 <i className={`bi ${resident.gender === 'male' ? 'bi-gender-male' : 'bi-gender-female'} me-1`}></i>
                                 {resident.gender === 'male' ? 'Nam' : 'Nữ'}
                               </p>
+                              {/* Temp Status Badge */}
+                              {resident.tempStatus && resident.tempStatus !== 'none' && (
+                                <div className="mt-2">
+                                  {resident.tempStatus === 'tam_tru' ? (
+                                    <Badge bg="info" className="px-2 py-1" style={{ fontSize: '0.75rem' }}>
+                                      <i className="fas fa-home me-1"></i>Tạm trú
+                                    </Badge>
+                                  ) : (
+                                    <Badge bg="warning" className="px-2 py-1" style={{ fontSize: '0.75rem' }}>
+                                      <i className="fas fa-plane-departure me-1"></i>Tạm vắng
+                                    </Badge>
+                                  )}
+                                  {resident.tempEndDate && (
+                                    <div className="text-muted" style={{ fontSize: '0.7rem' }}>
+                                      Đến: {new Date(resident.tempEndDate).toLocaleDateString('vi-VN')}
+                                    </div>
+                                  )}
+                                </div>
+                              )}
                             </div>
                           </div>
                           
@@ -646,6 +777,53 @@ const HouseholdDetailScreen = () => {
       ) : (
         <Message>Không tìm thấy hộ gia đình</Message>
       )}
+
+      {/* Modal chọn chủ hộ */}
+      <Modal show={showHeadModal} onHide={() => setShowHeadModal(false)} centered>
+        <Modal.Header closeButton>
+          <Modal.Title>
+            <i className="bi bi-crown me-2"></i>
+            {household?.householdHead ? 'Đổi chủ hộ' : 'Chọn chủ hộ'}
+          </Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Form.Group>
+            <Form.Label className="fw-bold">Chọn cư dân làm chủ hộ:</Form.Label>
+            <Form.Select
+              value={selectedHead}
+              onChange={(e) => setSelectedHead(e.target.value)}
+              className="form-select-lg"
+            >
+              <option value="">-- Không có chủ hộ --</option>
+              {residents.map((resident) => (
+                <option key={resident._id} value={resident._id}>
+                  {resident.fullName} - {resident.gender === 'male' ? 'Nam' : 'Nữ'}
+                  {resident.idCard && ` (${resident.idCard})`}
+                </option>
+              ))}
+            </Form.Select>
+            {residents.length === 0 && (
+              <div className="alert alert-warning mt-3">
+                <i className="bi bi-exclamation-triangle me-2"></i>
+                Chưa có cư dân nào trong hộ gia đình. Hãy thêm cư dân trước khi chọn chủ hộ.
+              </div>
+            )}
+          </Form.Group>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setShowHeadModal(false)}>
+            Hủy
+          </Button>
+          <Button 
+            variant="primary" 
+            onClick={handleUpdateHead}
+            disabled={residents.length === 0}
+          >
+            <i className="bi bi-check-circle me-1"></i>
+            Cập nhật
+          </Button>
+        </Modal.Footer>
+      </Modal>
     </div>
   );
 };

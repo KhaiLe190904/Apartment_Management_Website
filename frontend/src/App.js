@@ -23,6 +23,8 @@ import UserEditScreen from './screens/UserEditScreen';
 import VehicleListScreen from './screens/VehicleListScreen';
 import VehicleEditScreen from './screens/VehicleEditScreen';
 import VehicleFeeScreen from './screens/VehicleFeeScreen';
+import AreaBasedFeeScreen from './screens/AreaBasedFeeScreen';
+
 import NotFoundScreen from './screens/NotFoundScreen';
 
 function App() {
@@ -64,6 +66,7 @@ function App() {
                 <Route path="/vehicles" element={<VehicleListScreen />} />
                 <Route path="/vehicles/create" element={<VehicleEditScreen />} />
                 <Route path="/vehicle-fees" element={<VehicleFeeScreen />} />
+                <Route path="/area-fees" element={<AreaBasedFeeScreen />} />
               </Route>
               
               {/* Routes accessible only to managers and admins */}

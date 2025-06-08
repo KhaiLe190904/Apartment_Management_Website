@@ -122,6 +122,9 @@ const Header = () => {
                     <LinkContainer to="/vehicle-fees">
                       <NavDropdown.Item>Phí xe</NavDropdown.Item>
                     </LinkContainer>
+                    <LinkContainer to="/area-fees">
+                      <NavDropdown.Item>Phí theo diện tích</NavDropdown.Item>
+                    </LinkContainer>
                   </NavDropdown>
                   
                   <NavDropdown

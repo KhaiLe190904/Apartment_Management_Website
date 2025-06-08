@@ -35,6 +35,12 @@ const ResidentEditScreen = () => {
   const [note, setNote] = useState('');
   const [active, setActive] = useState(true);
   
+  // Temp status fields
+  const [tempStatus, setTempStatus] = useState('none');
+  const [tempStartDate, setTempStartDate] = useState('');
+  const [tempEndDate, setTempEndDate] = useState('');
+  const [tempReason, setTempReason] = useState('');
+  
   // States
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -106,6 +112,18 @@ const ResidentEditScreen = () => {
       setNote(data.note || '');
       setActive(data.active);
       
+      // Load temp status
+      setTempStatus(data.tempStatus || 'none');
+      if (data.tempStartDate) {
+        const startDateObj = new Date(data.tempStartDate);
+        setTempStartDate(startDateObj.toISOString().split('T')[0]);
+      }
+      if (data.tempEndDate) {
+        const endDateObj = new Date(data.tempEndDate);
+        setTempEndDate(endDateObj.toISOString().split('T')[0]);
+      }
+      setTempReason(data.tempReason || '');
+      
       setLoading(false);
     } catch (error) {
       setError(
@@ -169,7 +187,11 @@ const ResidentEditScreen = () => {
         phone,
         household: householdId || null,
         note,
-        active
+        active,
+        tempStatus,
+        tempStartDate: tempStartDate || null,
+        tempEndDate: tempEndDate || null,
+        tempReason
       };
       
       if (isEditMode) {
@@ -399,6 +421,63 @@ const ResidentEditScreen = () => {
                 onChange={(e) => setNote(e.target.value)}
               />
             </Form.Group>
+            {/* Temp Status Section */}
+            <Card className="border-info mb-3">
+              <Card.Header className="bg-info text-white">
+                <i className="fas fa-address-card me-2"></i>Trạng Thái Tạm Trú/Tạm Vắng
+              </Card.Header>
+              <Card.Body>
+                <Form.Group controlId='tempStatus' className='mb-3'>
+                  <Form.Label><i className="fas fa-home me-1 text-info"></i> Trạng Thái</Form.Label>
+                  <Form.Select
+                    value={tempStatus}
+                    onChange={(e) => setTempStatus(e.target.value)}
+                  >
+                    <option value='none'>Không có</option>
+                    <option value='tam_tru'>Tạm trú</option>
+                    <option value='tam_vang'>Tạm vắng</option>
+                  </Form.Select>
+                </Form.Group>
+
+                {tempStatus !== 'none' && (
+                  <>
+                    <Row>
+                      <Col md={6}>
+                        <Form.Group controlId='tempStartDate' className='mb-3'>
+                          <Form.Label><i className="fas fa-calendar-alt me-1 text-success"></i> Ngày Bắt Đầu</Form.Label>
+                          <Form.Control
+                            type='date'
+                            value={tempStartDate}
+                            onChange={(e) => setTempStartDate(e.target.value)}
+                          />
+                        </Form.Group>
+                      </Col>
+                      <Col md={6}>
+                        <Form.Group controlId='tempEndDate' className='mb-3'>
+                          <Form.Label><i className="fas fa-calendar-times me-1 text-danger"></i> Ngày Kết Thúc</Form.Label>
+                          <Form.Control
+                            type='date'
+                            value={tempEndDate}
+                            onChange={(e) => setTempEndDate(e.target.value)}
+                          />
+                        </Form.Group>
+                      </Col>
+                    </Row>
+                    <Form.Group controlId='tempReason' className='mb-3'>
+                      <Form.Label><i className="fas fa-comment me-1 text-warning"></i> Lý Do</Form.Label>
+                      <Form.Control
+                        as='textarea'
+                        rows={2}
+                        placeholder={`Nhập lý do ${tempStatus === 'tam_tru' ? 'tạm trú' : 'tạm vắng'}...`}
+                        value={tempReason}
+                        onChange={(e) => setTempReason(e.target.value)}
+                      />
+                    </Form.Group>
+                  </>
+                )}
+              </Card.Body>
+            </Card>
+
             {isEditMode && (
               <Form.Group controlId='active' className='mb-3'>
                 <Form.Check

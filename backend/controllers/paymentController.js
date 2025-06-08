@@ -246,13 +246,14 @@ const getHouseholdFeeStatus = asyncHandler(async (req, res) => {
     throw new Error('Không tìm thấy hộ gia đình');
   }
   
-  // Import vehicle fee service
+  // Import vehicle fee service and area-based fee service
   const vehicleFeeService = require('../services/vehicleFeeService');
+  const areaBasedFeeService = require('../services/areaBasedFeeService');
   
-  // Lấy các loại phí đang hoạt động (loại trừ tất cả phí xe)
+  // Lấy các loại phí đang hoạt động (loại trừ tất cả phí xe và phí theo diện tích)
   const activeFees = await Fee.find({ 
     active: true,
-    feeCode: { $nin: ['PHI002', 'PHI003', 'PHI005'] } // Loại trừ tất cả phí xe riêng lẻ
+    feeCode: { $nin: ['PHI002', 'PHI003', 'PHI005', 'PHI006', 'PHI007'] } // Loại trừ phí xe và phí theo diện tích riêng lẻ
   });
   
   // Lấy tất cả các khoản thanh toán của hộ gia đình
@@ -386,6 +387,77 @@ const getHouseholdFeeStatus = asyncHandler(async (req, res) => {
   } catch (error) {
     console.error('Error calculating vehicle fee:', error);
     // Không làm gì nếu có lỗi, chỉ bỏ qua phí xe
+  }
+  
+  // Tính phí theo diện tích cho hộ gia đình này
+  try {
+    const areaFeeCalculation = await areaBasedFeeService.calculateAreaBasedFeeForHousehold(householdId);
+    
+    // Chỉ hiển thị phí theo diện tích nếu hộ gia đình có diện tích và tổng phí > 0
+    if (areaFeeCalculation.totalAmount > 0 && areaFeeCalculation.area > 0) {
+      // Tìm các khoản thanh toán phí theo diện tích trong tháng hiện tại và tháng trước
+      const areaFeePayments = householdPayments.filter(payment => 
+        payment.fee.feeCode && ['PHI006', 'PHI007'].includes(payment.fee.feeCode)
+      );
+      
+      const currentMonthAreaPayments = areaFeePayments.filter(payment => 
+        (payment.period && 
+         payment.period >= firstDayCurrentMonth &&
+         payment.period <= lastDayCurrentMonth) ||
+        (!payment.period &&
+         payment.paymentDate >= firstDayCurrentMonth &&
+         payment.paymentDate <= lastDayCurrentMonth)
+      );
+      
+      const lastMonthAreaPayments = areaFeePayments.filter(payment => 
+        (payment.period && 
+         payment.period >= firstDayLastMonth &&
+         payment.period <= lastDayLastMonth) ||
+        (!payment.period &&
+         payment.paymentDate >= firstDayLastMonth &&
+         payment.paymentDate <= lastDayLastMonth)
+      );
+      
+      // Tính tổng số tiền đã thanh toán và kiểm tra tính hợp lệ
+      const currentMonthAreaPaid = currentMonthAreaPayments.reduce((sum, p) => sum + p.amount, 0);
+      const lastMonthAreaPaid = lastMonthAreaPayments.reduce((sum, p) => sum + p.amount, 0);
+
+      // Kiểm tra xem có payment nào trong tháng không và số tiền có đủ không
+      const isCurrentMonthAreaPaymentValid = currentMonthAreaPayments.length > 0 && 
+        currentMonthAreaPaid >= areaFeeCalculation.totalAmount;
+
+      const isLastMonthAreaPaymentValid = lastMonthAreaPayments.length > 0 && 
+        lastMonthAreaPaid >= areaFeeCalculation.totalAmount;
+
+      // Xác định trạng thái tháng trước
+      let lastMonthAreaStatus = 'not_applicable';
+      
+      if (areaFeeCalculation.totalAmount > 0) {
+        if (isLastMonthAreaPaymentValid) {
+          lastMonthAreaStatus = 'paid';
+        } else {
+          lastMonthAreaStatus = 'overdue'; // Nếu có diện tích nhưng chưa trả đúng phí
+        }
+      }
+       
+       // Thêm mục phí theo diện tích gộp chung với ID đặc biệt
+       feeStatus.push({
+         _id: 'area-fee-combined', // Sử dụng ID đặc biệt
+         name: 'Phí dịch vụ & quản lý chung cư',
+         feeType: 'area-based',
+         amount: areaFeeCalculation.totalAmount,
+         currentMonthStatus: isCurrentMonthAreaPaymentValid ? 'paid' : 'pending',
+         lastMonthStatus: lastMonthAreaStatus,
+         currentMonthPayment: currentMonthAreaPayments.length > 0 ? currentMonthAreaPayments[0] : null,
+         lastMonthPayment: lastMonthAreaPayments.length > 0 ? lastMonthAreaPayments[0] : null,
+         areaDetails: areaFeeCalculation.feeDetails, // Chi tiết phí theo diện tích để hiển thị
+         area: areaFeeCalculation.area,
+         isAreaFee: true // Flag để frontend nhận biết đây là phí theo diện tích gộp chung
+       });
+    }
+  } catch (error) {
+    console.error('Error calculating area-based fee:', error);
+    // Không làm gì nếu có lỗi, chỉ bỏ qua phí theo diện tích
   }
   
   res.json({

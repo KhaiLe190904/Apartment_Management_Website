@@ -60,6 +60,20 @@ const residentSchema = new mongoose.Schema({
   active: {
     type: Boolean,
     default: true
+  },
+  tempStatus: {
+    type: String,
+    enum: ['none', 'tam_tru', 'tam_vang'],
+    default: 'none'
+  },
+  tempStartDate: {
+    type: Date
+  },
+  tempEndDate: {
+    type: Date
+  },
+  tempReason: {
+    type: String
   }
 }, {
   timestamps: true
