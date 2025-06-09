@@ -5,7 +5,8 @@ const {
   createHousehold,
   updateHousehold,
   deleteHousehold,
-  getHouseholdResidents
+  getHouseholdResidents,
+  restoreHousehold
 } = require('../controllers/householdController');
 const { protect, authorize } = require('../middleware/authMiddleware');
 
@@ -25,5 +26,8 @@ router.route('/:id')
 
 router.route('/:id/residents')
   .get(getHouseholdResidents);
+
+router.route('/:id/restore')
+  .put(authorize('admin'), restoreHousehold);
 
 module.exports = router; 

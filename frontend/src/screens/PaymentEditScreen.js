@@ -163,45 +163,7 @@ const PaymentEditScreen = () => {
                     </Form.Group>
                   </Col>
                 </Row>
-
                 <Row>
-                  <Col md={6}>
-                    <Form.Group className="mb-3">
-                      <Form.Label>Tên người nộp</Form.Label>
-                      <Form.Control
-                        type="text"
-                        name="payerName"
-                        value={formData.payerName}
-                        onChange={handleChange}
-                        required
-                      />
-                    </Form.Group>
-                  </Col>
-                  <Col md={6}>
-                    <Form.Group className="mb-3">
-                      <Form.Label>CCCD/CMT người nộp</Form.Label>
-                      <Form.Control
-                        type="text"
-                        name="payerId"
-                        value={formData.payerId}
-                        onChange={handleChange}
-                      />
-                    </Form.Group>
-                  </Col>
-                </Row>
-
-                <Row>
-                  <Col md={6}>
-                    <Form.Group className="mb-3">
-                      <Form.Label>Số điện thoại</Form.Label>
-                      <Form.Control
-                        type="tel"
-                        name="payerPhone"
-                        value={formData.payerPhone}
-                        onChange={handleChange}
-                      />
-                    </Form.Group>
-                  </Col>
                   <Col md={6}>
                     <Form.Group className="mb-3">
                       <Form.Label>Số biên lai</Form.Label>
@@ -214,7 +176,6 @@ const PaymentEditScreen = () => {
                     </Form.Group>
                   </Col>
                 </Row>
-
                 <Row>
                   <Col md={6}>
                     <Form.Group className="mb-3">

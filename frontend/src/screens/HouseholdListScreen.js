@@ -478,7 +478,7 @@ const HouseholdListScreen = () => {
         onHide={() => setShowConfirm(false)}
         onConfirm={handleConfirmDelete}
         title="Xác nhận xóa hộ gia đình"
-        message="Bạn có chắc chắn muốn xóa hộ gia đình này? Hành động này không thể hoàn tác."
+        message="Bạn có chắc chắn muốn xóa hộ gia đình này? Hộ gia đình sẽ được ẩn khỏi danh sách nhưng dữ liệu vẫn được bảo toàn."
         confirmText="Xóa"
         cancelText="Hủy"
         loading={loading}

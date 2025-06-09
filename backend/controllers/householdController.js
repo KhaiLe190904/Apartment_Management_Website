@@ -6,7 +6,7 @@ const Resident = require('../models/residentModel');
 // @access  Private
 exports.getHouseholds = async (req, res) => {
   try {
-    const households = await Household.find().populate('householdHead', 'fullName');
+    const households = await Household.find({ active: true }).populate('householdHead', 'fullName');
     res.json(households);
   } catch (error) {
     console.error(error);
@@ -19,11 +19,11 @@ exports.getHouseholds = async (req, res) => {
 // @access  Private
 exports.getHouseholdById = async (req, res) => {
   try {
-    const household = await Household.findById(req.params.id)
+    const household = await Household.findOne({ _id: req.params.id, active: true })
       .populate('householdHead', 'fullName dateOfBirth gender idCard phone');
     
     if (!household) {
-      return res.status(404).json({ message: 'Household not found' });
+      return res.status(404).json({ message: 'Household not found or has been deleted' });
     }
     
     res.json(household);
@@ -112,7 +112,7 @@ exports.updateHousehold = async (req, res) => {
   }
 };
 
-// @desc    Delete a household (hard delete)
+// @desc    Delete a household (soft delete)
 // @route   DELETE /api/households/:id
 // @access  Private/Admin
 exports.deleteHousehold = async (req, res) => {
@@ -123,18 +123,31 @@ exports.deleteHousehold = async (req, res) => {
       return res.status(404).json({ message: 'Household not found' });
     }
     
-    // Check if there are residents belonging to this household
-    const residents = await Resident.find({ household: req.params.id });
-    if (residents.length > 0) {
+    // Check if household is already inactive
+    if (!household.active) {
       return res.status(400).json({ 
-        message: 'Không thể xóa hộ gia đình này vì vẫn còn cư dân thuộc hộ. Vui lòng xóa hoặc chuyển các cư dân trước.'
+        message: 'Hộ gia đình này đã được xóa trước đó.'
       });
     }
     
-    // Hard delete the household
-    await Household.findByIdAndDelete(req.params.id);
+    // Soft delete by setting active to false
+    household.active = false;
+    await household.save();
     
-    res.json({ message: 'Household deleted successfully' });
+    // Also set all residents in this household to inactive (optional)
+    await Resident.updateMany(
+      { household: req.params.id },
+      { active: false }
+    );
+    
+    res.json({ 
+      message: 'Hộ gia đình đã được xóa thành công',
+      household: {
+        id: household._id,
+        apartmentNumber: household.apartmentNumber,
+        active: household.active
+      }
+    });
   } catch (error) {
     console.error(error);
     if (error.kind === 'ObjectId') {
@@ -158,6 +171,44 @@ exports.getHouseholdResidents = async (req, res) => {
     const residents = await Resident.find({ household: req.params.id });
     
     res.json(residents);
+  } catch (error) {
+    console.error(error);
+    if (error.kind === 'ObjectId') {
+      return res.status(404).json({ message: 'Household not found' });
+    }
+    res.status(500).json({ message: 'Server Error' });
+  }
+};
+
+// @desc    Restore a deleted household
+// @route   PUT /api/households/:id/restore
+// @access  Private/Admin
+exports.restoreHousehold = async (req, res) => {
+  try {
+    const household = await Household.findById(req.params.id);
+    
+    if (!household) {
+      return res.status(404).json({ message: 'Household not found' });
+    }
+    
+    if (household.active) {
+      return res.status(400).json({ 
+        message: 'Hộ gia đình này vẫn đang hoạt động.'
+      });
+    }
+    
+    // Restore household by setting active to true
+    household.active = true;
+    await household.save();
+    
+    res.json({ 
+      message: 'Hộ gia đình đã được khôi phục thành công',
+      household: {
+        id: household._id,
+        apartmentNumber: household.apartmentNumber,
+        active: household.active
+      }
+    });
   } catch (error) {
     console.error(error);
     if (error.kind === 'ObjectId') {
