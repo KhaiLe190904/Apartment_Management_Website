@@ -74,8 +74,8 @@ const PaymentDetailScreen = () => {
       <Row className="align-items-center my-3">
         <Col>
           <Link to="/payments" className="btn btn-light">
-            <i className="fas fa-arrow-left"></i> Quay lại
-          </Link>
+        <i className="fas fa-arrow-left"></i> Quay lại
+      </Link>
         </Col>
         <Col className="text-end">
           {isAdmin && (

@@ -35,9 +35,9 @@ const Header = () => {
         expand="lg"
         className="py-2 px-0"
         style={{
-          background: 'linear-gradient(90deg, #00CCFF 60%, #e0faff 100%)',
+          background: 'linear-gradient(90deg, #2193b0 0%, #6dd5ed 100%)',
           borderRadius: '0 0 1.5rem 1.5rem',
-          boxShadow: '0 2px 16px 0 rgba(0,204,255,0.13)',
+          boxShadow: '0 2px 16px 0 rgba(33, 147, 176, 0.13)',
         }}
       >
         <Container fluid>
@@ -49,7 +49,7 @@ const Header = () => {
                   alt="BlueMoon Logo" 
                   style={{
                     width: '40px', 
-                    height: '40px',
+                    height: '40px', 
                     objectFit: 'contain'
                   }}
                   onError={(e) => {
