@@ -1,48 +1,71 @@
-# Hướng dẫn sử dụng script thiết lập dữ liệu
+# Database Scripts
 
-## Tổng quan
+Thư mục này chứa các scripts để quản lý database và dữ liệu của hệ thống quản lý chung cư.
 
-Thư mục này chứa script chính để thiết lập và tạo dữ liệu mẫu cho hệ thống quản lý chung cư BlueMoon.
+## Cấu trúc
 
-## Script chính
+### setup/
+Scripts để thiết lập database ban đầu:
+- `clearDatabase.js` - Xóa toàn bộ dữ liệu
+- `setupDatabase.js` - Tạo cấu trúc database và dữ liệu mẫu
 
-### setupDatabase.js
+### seed/
+Scripts để thêm dữ liệu mẫu:
+- `seedFacilities.js` - Thêm dữ liệu tiện ích
+- `setHouseholdHeads.js` - Thiết lập chủ hộ
+- `addAreaBasedFees.js` - Thêm phí theo diện tích
+- `addAreaBasedPayments.js` - Thêm thanh toán theo diện tích
+- `addMoreAreaPayments.js` - Thêm thêm thanh toán
+- `createHygieneFee.js` - Tạo phí vệ sinh
+- `addTempStatusToResidents.js` - Thêm trạng thái tạm trú
 
-Đây là script duy nhất cần thiết để thiết lập toàn bộ dữ liệu cho hệ thống. Tất cả các chức năng từ các script khác đã được tích hợp vào file này.
+### maintenance/
+Scripts để bảo trì và cập nhật dữ liệu:
+- `updateVehicleFee.js` - Cập nhật phí xe
+- `updateVoluntaryFeeStatus.js` - Cập nhật trạng thái phí tự nguyện
+- `restoreOriginalFees.js` - Khôi phục phí gốc
+- `fixPaymentDates.js` - Sửa ngày thanh toán
+- `paymentStats.js` - Thống kê thanh toán
 
+## Cách sử dụng
+
+### Chạy tất cả setup scripts
 ```bash
-node scripts/setupDatabase.js
+npm run setup
 ```
 
-Script này sẽ thực hiện các bước sau:
-1. Kiểm tra và xóa chỉ mục householdCode nếu tồn tại
-2. Tạo người dùng admin và các người dùng khác nếu chưa có
-3. Tạo các loại phí nếu chưa có
-4. Tạo dữ liệu hộ gia đình, cư dân và thanh toán
-5. Hiển thị thống kê doanh thu tháng 6 đến ngày 6/6
+### Chạy script riêng lẻ
+```bash
+# Setup scripts
+node scripts/setup/clearDatabase.js
+node scripts/setup/setupDatabase.js
 
-## Các chức năng chính
+# Seed scripts
+node scripts/seed/seedFacilities.js
+node scripts/seed/setHouseholdHeads.js
 
-Script setupDatabase.js tích hợp các chức năng sau:
+# Maintenance scripts
+node scripts/maintenance/updateVehicleFee.js
+node scripts/maintenance/paymentStats.js
+```
 
-1. **fixHouseholdIndex()**: Kiểm tra và xóa chỉ mục householdCode nếu tồn tại
-2. **createAdminUser()**: Tạo người dùng admin và các người dùng khác nếu chưa có
-3. **createFees()**: Tạo các loại phí cơ bản nếu chưa có
-4. **createMassiveTestData()**: Tạo dữ liệu hộ gia đình, cư dân và thanh toán
+## Yêu cầu
 
-## Dữ liệu được tạo
+- Node.js
+- MongoDB đang chạy
+- File `.env` với cấu hình database
+- Các dependencies đã được cài đặt (`npm install`)
 
-Script sẽ tạo các dữ liệu sau:
+## Biến môi trường
 
-- **Người dùng**: Admin, quản lý, kế toán, nhân viên
-- **Loại phí**: Phí quản lý, phí gửi xe ô tô, phí gửi xe máy, phí đóng góp
-- **Hộ gia đình**: 50+ hộ gia đình với thông tin chi tiết
-- **Cư dân**: 190+ cư dân thuộc các hộ gia đình
-- **Thanh toán**: 900+ thanh toán trong 6 tháng gần đây
-- **Dữ liệu tháng 6**: Dữ liệu thanh toán chi tiết cho tháng 6 đến ngày 6/6
+Đảm bảo file `.env` có các biến sau:
+```
+MONGO_URI=mongodb://localhost:27017/bluemoon_apartment
+MONGODB_URI=mongodb://localhost:27017/bluemoon_apartment
+```
 
 ## Lưu ý
 
-- Trước khi chạy script, hãy đảm bảo MongoDB đang chạy
-- Script sẽ xóa dữ liệu cũ trước khi tạo dữ liệu mới (trừ một số dữ liệu quan trọng)
-- Không có thanh toán quá hạn trong tháng 6 (chỉ có trạng thái đã thanh toán hoặc đang chờ) 
+- Luôn backup database trước khi chạy scripts maintenance
+- Scripts setup sẽ xóa dữ liệu hiện tại
+- Chạy scripts theo thứ tự đúng để tránh lỗi dependency 
