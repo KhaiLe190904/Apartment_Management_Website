@@ -1,4 +1,4 @@
-# 🏢 G23 Apartment Management System
+# 🏢 Apartment Management Website
 
 Hệ thống quản lý chung cư BlueMoon - Một ứng dụng web toàn diện để quản lý các hoạt động của chung cư bao gồm quản lý cư dân, hộ gia đình, phí dịch vụ, thanh toán và tiện ích.
 
